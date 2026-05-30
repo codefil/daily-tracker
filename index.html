@@ -116,9 +116,11 @@
         
         .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
-        th, td { border: 1px solid var(--border-color); padding: 5px 2px; height: 22px; min-width: 24px; }
-        th:first-child, td:first-child { text-align: left; font-weight: 500; width: 160px; min-width: 140px; padding-left: 8px; background-color: var(--panel-bg); position: sticky; left: 0; z-index: 10; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; table-layout: fixed; }
+        th, td { border: 1px solid var(--border-color); padding: 5px 2px; height: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* Šířka sloupců na PC */
+        th:first-child, td:first-child { text-align: left; font-weight: 500; width: 160px; padding-left: 8px; background-color: var(--panel-bg); position: sticky; left: 0; z-index: 10; }
 
         th.cell-clickable:hover { background-color: #252525; }
         
@@ -175,6 +177,34 @@
         
         .order-btn { background: #2b2b2b; color: #fff; border: 1px solid #444; padding: 2px 6px; font-size: 10px; border-radius: 3px; }
         .order-btn:hover { background: #444; }
+
+        /* OPTIMALIZACE PRO MOBILNÍ TELEFONY */
+        @media (max-width: 768px) {
+            body { padding: 10px; font-size: 12px; }
+            h1 { font-size: 18px; }
+            
+            header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .controls { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            .controls button { padding: 6px 4px; font-size: 11px; text-align: center; }
+            #btn-open-settings { grid-column: span 3; }
+
+            /* Odstranění posouvání v TÝDENNÍM režimu a zafixování šířky */
+            .body-view-week .table-wrapper { overflow-x: hidden; }
+            .body-view-week table { table-layout: fixed; width: 100%; }
+            .body-view-week th:first-child, .body-view-week td:first-child { width: 110px; min-width: 110px; font-size: 10px; padding-left: 4px; }
+            
+            /* Měsíční režim na mobilu posun povolí, aby se dny nemačkaly */
+            .body-view-month .table-wrapper { overflow-x: auto; }
+            .body-view-month table { table-layout: auto; width: auto; }
+            .body-view-month th:first-child, .body-view-month td:first-child { width: 130px; position: sticky; left: 0; }
+
+            .lower-section { flex-direction: column; gap: 15px; }
+            #sport-panel { width: auto !important; }
+            .lower-section .panel { width: auto !important; }
+            
+            .diary-paper-layout { flex-direction: column; height: auto; }
+            .diary-write-side { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -188,13 +218,13 @@
             <button id="btn-next-week" style="padding: 4px 10px;">▶</button>
         </div>
         <div class="controls">
-            <button id="btn-view-week" class="active">Týden</button>
+            <button id="btn-view-week">Týden</button>
             <button id="btn-view-month">Měsíc</button>
             <button id="btn-open-calendar">Kalendář</button>
             <button id="btn-open-year">Celý rok</button>
-            <button id="btn-open-todo" style="background-color: #059669; color: white; border-color: #059669;">To-Do List</button>
-            <button id="btn-open-goals" style="background-color: #d97706; color: white; border-color: #d97706;">Roční Cíle</button>
-            <button id="btn-open-diary" style="background-color: #4b5563; border-color: #4b5563;">Otevřít Deník</button>
+            <button id="btn-open-todo" style="background-color: #059669; color: white; border-color: #059669;">To-Do</button>
+            <button id="btn-open-goals" style="background-color: #d97706; color: white; border-color: #d97706;">Cíle</button>
+            <button id="btn-open-diary" style="background-color: #4b5563; border-color: #4b5563;">Deník</button>
         </div>
     </header>
 
@@ -234,7 +264,7 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:center; gap:15px;">
+        <div style="display:flex; justify-content:center; gap:15px; flex-wrap: wrap;">
             <button id="btn-open-settings">Nastavení a správa úkolů</button>
             <button id="btn-open-big-stats" style="background-color: var(--primary); color:white; border-color: var(--primary);">Velké statistiky</button>
         </div>
@@ -287,7 +317,7 @@
             <h2 style="margin:0;">📋 Průběžný To-Do List</h2>
             <div style="display:flex; gap:6px;">
                 <button id="btn-clear-done-todo" style="background:#dc2626; color:white; border-color:#dc2626; font-size:12px;">Smazat hotové</button>
-                <button id="btn-add-todo" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat úkol</button>
+                <button id="btn-add-todo" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat</button>
             </div>
         </div>
         <div id="todo-list-container" style="max-height:50vh; overflow-y:auto; margin-bottom:15px;"></div>
@@ -418,7 +448,10 @@
         let currentMonth = today.getMonth();
         let selectedDay = today.getDate();
         
-        let currentView = 'week';
+        // ZJIŠTĚNÍ ZAŘÍZENÍ: Mobilní zařízení začnou automaticky v Týdnu, PC v Měsíci
+        const isMobileDevice = window.innerWidth <= 768;
+        let currentView = isMobileDevice ? 'week' : 'month';
+        
         let graphPeriod = 'month';
         let yearOverviewSelectedYear = today.getFullYear();
 
@@ -480,6 +513,14 @@
                 checkAndInitData(currentYear, currentMonth);
                 document.getElementById('loading-overlay').style.display = 'none';
                 buildCalendarSelects();
+                
+                // Nastavení aktivního tlačítka podle detekovaného zařízení
+                if (currentView === 'week') {
+                    toggleActiveViewBtn(document.getElementById('btn-view-week'));
+                } else {
+                    toggleActiveViewBtn(document.getElementById('btn-view-month'));
+                }
+                
                 renderDashboard();
                 updateYearProgressBar();
             }, { onlyOnce: false });
@@ -523,7 +564,6 @@
         function init() {
             setupEventListeners();
             document.getElementById('diary-input-date').value = today.toISOString().split('T')[0];
-            toggleActiveViewBtn(document.getElementById('btn-view-week'));
             
             document.getElementById('stats-period').onchange = () => {
                 calculateBigStats();
@@ -1105,7 +1145,7 @@
         function toggleActiveViewBtn(target) {
             document.getElementById('btn-view-week').classList.remove('active');
             document.getElementById('btn-view-month').classList.remove('active');
-            target.classList.add('active');
+            if (target) target.classList.add('active');
         }
 
         window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
@@ -1128,7 +1168,6 @@
             container.innerHTML = html;
         }
 
-        // KOREKTNÍ AUTOMATICKÉ MĚŘENÍ AKTUÁLNÍ A MAXIMÁLNÍ SÉRIE (STREAKS) + LIFETIME STATISTIKY
         function calculateBigStats() {
             const period = document.getElementById('stats-period').value;
             const container = document.getElementById('stats-content-area');
@@ -1136,7 +1175,6 @@
             let daysToCheck = [];
             let totalM = getDaysInMonth(currentYear, currentMonth);
 
-            // 1. Sestavení pole dnů pro výpočet CELKOVÝCH POČTŮ splnění na základě filtru
             if (period === 'week') {
                 for(let d=weekStartDay; d<=Math.min(totalM, weekStartDay+6); d++) daysToCheck.push({y: currentYear, m: currentMonth, d});
             } else if (period === 'month') {
@@ -1148,7 +1186,6 @@
                 kRoky.forEach(y => { for(let m=0; m<12; m++) { checkAndInitData(y, m); let tD = getDaysInMonth(y, m); for(let d=1; d<=tD; d++) daysToCheck.push({y: y, m, d}); } });
             }
 
-            // 2. Výpočet celkových počtů splnění a sportů pro vybrané období
             let counts = {}; activities.forEach(a => counts[a.id] = 0);
             let sportCounts = {}; sportsList.forEach(s => sportCounts[s] = 0);
             let ratingSum = 0, ratingDays = 0;
@@ -1169,10 +1206,8 @@
                 if (db[item.y][item.m].sports && db[item.y][item.m].sports[item.d]) { sportsList.forEach(s => { if(db[item.y][item.m].sports[item.d][s]) sportCounts[s]++; }); }
             });
 
-            // 3. ROBUSTNÍ AUTOMATICKÝ STREAK ALGORITMUS (Běží přes celou osu historie nezávisle na filtrech)
             let streaksHTML = '<h4>Série dní (Aktuální stav)</h4><ul>';
             
-            // Vygenerujeme celou chronologickou osu od roku 2026 po dnešní den
             let timeline = [];
             let scanYear = 2026;
             let currentScanningDate = new Date(scanYear, 0, 1);
@@ -1192,7 +1227,6 @@
                     let currentStreak = 0;
                     let maxStreak = 0;
 
-                    // Spořádáme timeline a spočítáme maxStreak + průběžné budování
                     timeline.forEach(item => {
                         if (isActivityVisibleOnDate(act, item.y, item.m, item.d)) {
                             let status = (db[item.y] && db[item.y][item.m] && db[item.y][item.m][act.id]) ? db[item.y][item.m][act.id][item.d] : false;
@@ -1205,9 +1239,8 @@
                         }
                     });
 
-                    // Výpočet reálného AKTUÁLNÍHO STREAKU na základě konce osy (včerejšek / dnešek)
                     let actualCurrentStreak = 0;
-                    let idx = timeline.length - 1; // Dnešní den
+                    let idx = timeline.length - 1; 
                     
                     if (idx >= 0) {
                         let tToday = timeline[idx];
@@ -1219,7 +1252,6 @@
                             yesterdayDone = (db[tYest.y] && db[tYest.y][tYest.m] && db[tYest.y][tYest.m][act.id]) ? db[tYest.y][tYest.m][act.id][tYest.d] : false;
                         }
 
-                        // Pokud je splněno dnes, jdeme od dneška dozadu. Pokud dnes ne ale včera ano, jdeme od včerejška. Jinak je to 0.
                         if (todayDone || yesterdayDone) {
                             let startIdx = todayDone ? idx : idx - 1;
                             while (startIdx >= 0) {
@@ -1245,7 +1277,6 @@
             });
             streaksHTML += '</ul>';
 
-            // Zobrazení výsledků
             container.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                 <div><h4>Celkové počty splnění</h4><ul>` + activities.map(a => {
                     let everActive = daysToCheck.some(i => isActivityVisibleOnDate(a, i.y, i.m, i.d));
@@ -1269,12 +1300,12 @@
 
                 if (monthActs.length === 0) continue;
 
-                html += `<div class="panel"><h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4><table style="font-size:9px;"><tr><th>Aktivita</th>`;
+                html += `<div class="panel"><h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4><div style="overflow-x:auto;"><table style="font-size:9px; table-layout:auto; width:auto;"><tr><th>Aktivita</th>`;
                 for(let d=1; d<=days; d++) html += `<th>${d}</th>`;
                 html += `</tr>`;
                 
                 monthActs.forEach(act => {
-                    html += `<tr><td style="width:110px;">${act.name}</td>`;
+                    html += `<tr><td style="width:110px; text-align:left; padding-left:4px;">${act.name}</td>`;
                     for(let d=1; d<=days; d++) {
                         if (!isActivityVisibleOnDate(act, yearOverviewSelectedYear, m, d)) {
                             html += `<td style="background-color:#171717; color:#444;">-</td>`;
@@ -1287,7 +1318,7 @@
                     }
                     html += `</tr>`;
                 });
-                html += `</table></div>`;
+                html += `</table></div></div>`;
             }
             container.innerHTML = html;
         }
