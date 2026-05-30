@@ -149,9 +149,10 @@
         
         .drag-item { display: flex; align-items: center; justify-content: space-between; background: #121212; padding: 8px; border: 1px solid var(--border-color); margin-bottom: 5px; border-radius: 4px; }
 
-        .goal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: #121212; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .goal-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: #141414; padding: 10px; border-radius: 6px; border: 1px solid #333; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .goal-row.fancy-premium { border-left: 3px solid var(--primary); background: linear-gradient(145deg, #1e1e1e, #151515); }
         .goal-text { flex: 1; background: transparent; border: none; color: white; font-size: 13px; outline: none; }
-        .goal-done { text-decoration: line-through; color: #666; }
+        .goal-done { text-decoration: line-through; color: #555; }
 
         .diary-paper-layout { display: flex; gap: 20px; height: 70vh; }
         .diary-write-side { flex: 1.2; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border-color); padding-right: 20px; }
@@ -191,7 +192,8 @@
             <button id="btn-view-month">Měsíc</button>
             <button id="btn-open-calendar">Kalendář</button>
             <button id="btn-open-year">Celý rok</button>
-            <button id="btn-open-goals" style="background-color: #d97706; color: white; border-color: #d97706;">Cíle</button>
+            <button id="btn-open-todo" style="background-color: #059669; color: white; border-color: #059669;">To-Do List</button>
+            <button id="btn-open-goals" style="background-color: #d97706; color: white; border-color: #d97706;">Roční Cíle</button>
             <button id="btn-open-diary" style="background-color: #4b5563; border-color: #4b5563;">Otevřít Deník</button>
         </div>
     </header>
@@ -280,9 +282,23 @@
         <div style="text-align:right; margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><button onclick="closeModal('diary-modal')" style="padding:8px 20px;">Zavřít sešit</button></div>
     </div></div>
 
+    <div id="todo-modal" class="modal"><div class="modal-content" style="width:600px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0;">📋 Průběžný To-Do List</h2>
+            <div style="display:flex; gap:6px;">
+                <button id="btn-clear-done-todo" style="background:#dc2626; color:white; border-color:#dc2626; font-size:12px;">Smazat hotové</button>
+                <button id="btn-add-todo" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat úkol</button>
+            </div>
+        </div>
+        <div id="todo-list-container" style="max-height:50vh; overflow-y:auto; margin-bottom:15px;"></div>
+        <div style="text-align:right; border-top:1px solid var(--border-color); padding-top:15px;">
+            <button onclick="closeModal('todo-modal')" style="padding:8px 20px;">Zavřít</button>
+        </div>
+    </div></div>
+
     <div id="goals-modal" class="modal"><div class="modal-content" style="width:600px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0;">Roční cíle pro rok <span id="goals-year-title"></span></h2>
+            <h2 style="margin:0;">🎯 Roční cíle pro rok <span id="goals-year-title"></span></h2>
             <button id="btn-add-goal" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat cíl</button>
         </div>
         <div id="goals-list-container" style="max-height:50vh; overflow-y:auto; margin-bottom:15px;"></div>
@@ -292,13 +308,13 @@
     </div></div>
 
     <div id="big-stats-modal" class="modal"><div class="modal-content" style="width:550px;">
-        <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
             <h2 style="margin:0;">Centrum Statistik & Analýzy</h2>
             <select id="stats-period" style="padding:5px; background:#121212; color:white; border:1px solid var(--border-color);">
                 <option value="week">Tento týden</option>
                 <option value="month" selected>Tento měsíc</option>
                 <option value="year">Tento rok</option>
-                <option value="lifetime">Úplně vše (Lifetime)</option>
+                <option value="lifetime">Celá doba (Lifetime)</option>
             </select>
         </div>
         <div id="stats-content-area"></div>
@@ -306,7 +322,7 @@
     </div></div>
 
     <div id="year-modal" class="modal"><div class="modal-content" style="width:95vw; max-width:1400px;">
-        <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
             <h2 style="margin:0;">Přehled celého roku</h2>
             <select id="year-overview-select" style="padding:6px 12px; background:#121212; color:white; border:1px solid var(--border-color); border-radius:6px; font-size:14px;"></select>
         </div>
@@ -427,7 +443,8 @@
 
         let db = {};
         let diary = {};
-        let goals = {};
+        let goals = {}; 
+        let todoList = []; 
 
         let mainChartInstance = null;
         let sportChartInstance = null;
@@ -450,9 +467,9 @@
                     diary = cloudData.diary || {};
                     activities = cloudData.activities || activities;
                     goals = cloudData.goals || {};
+                    todoList = cloudData.todoList || [];
                     
                     activities = activities.filter(a => a.id !== 'screen_time');
-                    
                     activities.forEach(a => {
                         if (a.start === undefined) a.start = "";
                         if (a.end === undefined) a.end = "";
@@ -484,13 +501,11 @@
                     }
                 }
             }
-            if (zmeny) {
-                saveToCloud();
-            }
+            if (zmeny) saveToCloud();
         }
 
         function saveToCloud() {
-            window.dbSet(window.dbRef("cloud_tracker_data"), { db, diary, activities, goals });
+            window.dbSet(window.dbRef("cloud_tracker_data"), { db, diary, activities, goals, todoList });
         }
 
         function getDaysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
@@ -509,6 +524,10 @@
             setupEventListeners();
             document.getElementById('diary-input-date').value = today.toISOString().split('T')[0];
             toggleActiveViewBtn(document.getElementById('btn-view-week'));
+            
+            document.getElementById('stats-period').onchange = () => {
+                calculateBigStats();
+            };
         }
 
         function buildCalendarSelects() {
@@ -634,6 +653,7 @@
             const ctx = document.getElementById('mainAnalysisChart').getContext('2d');
             let dataPoints = [];
             let labels = [];
+            let validSleepValuesForAvg = [];
 
             if (graphPeriod === 'week') {
                 let total = getDaysInMonth(currentYear, currentMonth);
@@ -641,25 +661,46 @@
                 let end = Math.min(total, start + 6);
                 for(let d=start; d<=end; d++) { 
                     labels.push(`${d}.`); 
-                    dataPoints.push(db[currentYear][currentMonth]['sleep'] ? db[currentYear][currentMonth]['sleep'][d] : 0); 
+                    let val = (db[currentYear] && db[currentYear][currentMonth] && db[currentYear][currentMonth]['sleep']) ? db[currentYear][currentMonth]['sleep'][d] : 0;
+                    dataPoints.push(val);
+                    
+                    let isPastOrToday = new Date(currentYear, currentMonth, d) <= today;
+                    if (val > 0 && isPastOrToday) { validSleepValuesForAvg.push(val); }
                 }
             } else if (graphPeriod === 'month') {
                 let total = getDaysInMonth(currentYear, currentMonth);
                 for(let d=1; d<=total; d++) { 
                     labels.push(`${d}.`); 
-                    dataPoints.push(db[currentYear][currentMonth]['sleep'] ? db[currentYear][currentMonth]['sleep'][d] : 0); 
+                    let val = (db[currentYear] && db[currentYear][currentMonth] && db[currentYear][currentMonth]['sleep']) ? db[currentYear][currentMonth]['sleep'][d] : 0;
+                    dataPoints.push(val);
+                    
+                    let isPastOrToday = new Date(currentYear, currentMonth, d) <= today;
+                    if (val > 0 && isPastOrToday) { validSleepValuesForAvg.push(val); }
                 }
             } else if (graphPeriod === 'year') {
                 for(let m=0; m<12; m++) {
                     checkAndInitData(currentYear, m);
                     let tDays = getDaysInMonth(currentYear, m);
-                    let sum = db[currentYear][m]['sleep'] ? db[currentYear][m]['sleep'].slice(1, tDays+1).reduce((a,b)=>a+b,0) : 0;
+                    let monthValidSums = 0;
+                    let monthValidDaysCount = 0;
+                    
+                    for(let d=1; d<=tDays; d++) {
+                        let isPastOrToday = new Date(currentYear, m, d) <= today;
+                        let val = db[currentYear][m]['sleep'] ? db[currentYear][m]['sleep'][d] : 0;
+                        if (val > 0 && isPastOrToday) {
+                            monthValidSums += val;
+                            monthValidDaysCount++;
+                        }
+                    }
+                    
                     labels.push(monthNames[m].substring(0,3));
-                    dataPoints.push(parseFloat((sum / tDays).toFixed(1)));
+                    let mAvg = monthValidDaysCount > 0 ? parseFloat((monthValidSums / monthValidDaysCount).toFixed(1)) : 0;
+                    dataPoints.push(mAvg);
+                    if (mAvg > 0) { validSleepValuesForAvg.push(mAvg); }
                 }
             }
 
-            let avg = dataPoints.length > 0 ? (dataPoints.reduce((a,b)=>a+b,0) / dataPoints.length).toFixed(1) : 0;
+            let avg = validSleepValuesForAvg.length > 0 ? (validSleepValuesForAvg.reduce((a,b)=>a+b,0) / validSleepValuesForAvg.length).toFixed(1) : 0;
             document.getElementById('avg-graph-value').innerText = `${avg} hod`;
 
             if(mainChartInstance) mainChartInstance.destroy();
@@ -747,27 +788,63 @@
             document.getElementById('year-progress-date').innerText = `Den ${dayOfYear} z ${daysInYear}`;
         }
 
+        function renderTodoList() {
+            const container = document.getElementById('todo-list-container');
+            let html = '';
+            
+            todoList.forEach((t, idx) => {
+                html += `<div class="goal-row">
+                    <button class="order-btn" onclick="moveTodo(${idx}, -1)">▲</button>
+                    <button class="order-btn" onclick="moveTodo(${idx}, 1)">▼</button>
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${idx})" style="margin-left: 5px;">
+                    <input type="text" class="goal-text ${t.done ? 'goal-done' : ''}" value="${t.text}" onchange="updateTodoText(${idx}, this.value)" placeholder="Zadej rychlý úkol...">
+                    <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
+                </div>`;
+            });
+            if(todoList.length === 0) html = '<p style="color:#666; text-align:center;">To-Do list je prázdný. Přidej si první úkol!</p>';
+            container.innerHTML = html;
+        }
+
+        window.toggleTodo = function(idx) { todoList[idx].done = !todoList[idx].done; saveToCloud(); renderTodoList(); }
+        window.updateTodoText = function(idx, val) { todoList[idx].text = val; saveToCloud(); }
+        window.deleteTodo = function(idx) { todoList.splice(idx, 1); saveToCloud(); renderTodoList(); }
+        window.moveTodo = function(idx, dir) {
+            let nIdx = idx + dir;
+            if(nIdx >= 0 && nIdx < todoList.length) {
+                let tmp = todoList[idx]; todoList[idx] = todoList[nIdx]; todoList[nIdx] = tmp;
+                saveToCloud(); renderTodoList();
+            }
+        }
+
         function renderGoals() {
             const container = document.getElementById('goals-list-container');
             if (!goals[currentYear]) goals[currentYear] = [];
             
             let html = '';
             goals[currentYear].forEach((g, idx) => {
-                html += `<div class="goal-row">
-                    <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${idx})">
-                    <input type="text" class="goal-text ${g.done ? 'goal-done' : ''}" value="${g.text}" onchange="updateGoalText(${idx}, this.value)" placeholder="Zadej cíl...">
-                    <button onclick="deleteGoal(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer;">✕</button>
+                html += `<div class="goal-row fancy-premium">
+                    <button class="order-btn" onclick="moveGoal(${idx}, -1)">▲</button>
+                    <button class="order-btn" onclick="moveGoal(${idx}, 1)">▼</button>
+                    <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${idx})" style="margin-left: 5px;">
+                    <input type="text" class="goal-text ${g.done ? 'goal-done' : ''}" value="${g.text}" onchange="updateGoalText(${idx}, this.value)" placeholder="Zadej velký roční cíl...">
+                    <button onclick="deleteGoal(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
                 </div>`;
             });
-            if(goals[currentYear].length === 0) html = '<p style="color:#666; text-align:center;">Žádné stanovené cíle pro tento rok.</p>';
+            if(goals[currentYear].length === 0) html = `<p style="color:#666; text-align:center;">Žádné stanovené cíle pro rok ${currentYear}.</p>`;
             container.innerHTML = html;
         }
 
         window.toggleGoal = function(idx) { goals[currentYear][idx].done = !goals[currentYear][idx].done; saveToCloud(); renderGoals(); }
         window.updateGoalText = function(idx, val) { goals[currentYear][idx].text = val; saveToCloud(); }
         window.deleteGoal = function(idx) { goals[currentYear].splice(idx, 1); saveToCloud(); renderGoals(); }
+        window.moveGoal = function(idx, dir) {
+            let nIdx = idx + dir;
+            if(nIdx >= 0 && nIdx < goals[currentYear].length) {
+                let tmp = goals[currentYear][idx]; goals[currentYear][idx] = goals[currentYear][nIdx]; goals[currentYear][nIdx] = tmp;
+                saveToCloud(); renderGoals();
+            }
+        }
 
-        // NOVÁ FUNKCE: Renderování nastavení s šipkami pro přesouvání nahoru a dolů
         function renderSettingsList() {
             const container = document.getElementById('modal-activity-list');
             container.innerHTML = '';
@@ -798,12 +875,10 @@
             });
         }
 
-        // NOVÁ FUNKCE: Zajišťuje samotný posun v poli a ukládá pořadí do cloudu
         window.moveActivity = function(index, direction) {
             let newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= activities.length) return; // Mimo rozsah
+            if (newIndex < 0 || newIndex >= activities.length) return;
             
-            // Prohození prvků
             let temp = activities[index];
             activities[index] = activities[newIndex];
             activities[newIndex] = temp;
@@ -892,14 +967,17 @@
             document.getElementById('btn-open-diary').onclick = () => { document.getElementById('diary-modal').style.display = 'flex'; renderDiaryLogs(); };
             document.getElementById('btn-open-big-stats').onclick = () => { document.getElementById('big-stats-modal').style.display = 'flex'; calculateBigStats(); };
             
+            document.getElementById('btn-open-todo').onclick = () => { renderTodoList(); document.getElementById('todo-modal').style.display = 'flex'; };
+            document.getElementById('btn-add-todo').onclick = () => { todoList.push({ text: '', done: false }); saveToCloud(); renderTodoList(); };
+            document.getElementById('btn-clear-done-todo').onclick = () => { todoList = todoList.filter(t => !t.done); saveToCloud(); renderTodoList(); };
+
             document.getElementById('btn-open-goals').onclick = () => {
                 document.getElementById('goals-year-title').innerText = currentYear;
                 renderGoals(); document.getElementById('goals-modal').style.display = 'flex';
             };
-
             document.getElementById('btn-add-goal').onclick = () => {
                 if (!goals[currentYear]) goals[currentYear] = [];
-                goals[currentYear].push({ id: Date.now(), text: '', done: false });
+                goals[currentYear].push({ text: '', done: false });
                 saveToCloud(); renderGoals();
             };
 
@@ -1050,61 +1128,130 @@
             container.innerHTML = html;
         }
 
+        // KOREKTNÍ AUTOMATICKÉ MĚŘENÍ AKTUÁLNÍ A MAXIMÁLNÍ SÉRIE (STREAKS) + LIFETIME STATISTIKY
         function calculateBigStats() {
             const period = document.getElementById('stats-period').value;
             const container = document.getElementById('stats-content-area');
+            
             let daysToCheck = [];
             let totalM = getDaysInMonth(currentYear, currentMonth);
 
+            // 1. Sestavení pole dnů pro výpočet CELKOVÝCH POČTŮ splnění na základě filtru
             if (period === 'week') {
                 for(let d=weekStartDay; d<=Math.min(totalM, weekStartDay+6); d++) daysToCheck.push({y: currentYear, m: currentMonth, d});
             } else if (period === 'month') {
                 for(let d=1; d<=totalM; d++) daysToCheck.push({y: currentYear, m: currentMonth, d});
             } else if (period === 'year') {
                 for(let m=0; m<12; m++) { checkAndInitData(currentYear, m); let tD = getDaysInMonth(currentYear, m); for(let d=1; d<=tD; d++) daysToCheck.push({y: currentYear, m, d}); }
+            } else if (period === 'lifetime') {
+                let kRoky = Object.keys(db).map(Number).sort();
+                kRoky.forEach(y => { for(let m=0; m<12; m++) { checkAndInitData(y, m); let tD = getDaysInMonth(y, m); for(let d=1; d<=tD; d++) daysToCheck.push({y: y, m, d}); } });
             }
 
+            // 2. Výpočet celkových počtů splnění a sportů pro vybrané období
             let counts = {}; activities.forEach(a => counts[a.id] = 0);
             let sportCounts = {}; sportsList.forEach(s => sportCounts[s] = 0);
-            let streaks = {}; activities.forEach(a => { if(a.type.includes('checkbox')) streaks[a.id] = { current: 0, max: 0 }; });
             let ratingSum = 0, ratingDays = 0;
-
-            activities.forEach(act => {
-                if (act.type.includes('checkbox')) {
-                    let currentStreak = 0;
-                    daysToCheck.forEach(item => {
-                        if (isActivityVisibleOnDate(act, item.y, item.m, item.d)) {
-                            if (db[item.y] && db[item.y][item.m] && db[item.y][item.m][act.id] && db[item.y][item.m][act.id][item.d]) { currentStreak++; counts[act.id]++; } 
-                            else { currentStreak = 0; }
-                            if (currentStreak > streaks[act.id].max) streaks[act.id].max = currentStreak;
-                        }
-                    });
-                    streaks[act.id].current = currentStreak;
-                }
-            });
 
             daysToCheck.forEach(item => {
                 if(!db[item.y] || !db[item.y][item.m]) return;
+                
+                activities.forEach(act => {
+                    if (isActivityVisibleOnDate(act, item.y, item.m, item.d)) {
+                        if (db[item.y][item.m][act.id] && db[item.y][item.m][act.id][item.d]) {
+                            counts[act.id]++;
+                        }
+                    }
+                });
+
                 let rVal = db[item.y][item.m]['rating'] ? db[item.y][item.m]['rating'][item.d] : 0;
                 if(rVal > 0) { ratingSum += rVal; ratingDays++; }
                 if (db[item.y][item.m].sports && db[item.y][item.m].sports[item.d]) { sportsList.forEach(s => { if(db[item.y][item.m].sports[item.d][s]) sportCounts[s]++; }); }
             });
 
-            let streakHTML = '<h4>Série dní</h4><ul>';
+            // 3. ROBUSTNÍ AUTOMATICKÝ STREAK ALGORITMUS (Běží přes celou osu historie nezávisle na filtrech)
+            let streaksHTML = '<h4>Série dní (Aktuální stav)</h4><ul>';
+            
+            // Vygenerujeme celou chronologickou osu od roku 2026 po dnešní den
+            let timeline = [];
+            let scanYear = 2026;
+            let currentScanningDate = new Date(scanYear, 0, 1);
+            let todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            while (currentScanningDate <= todayMidnight) {
+                timeline.push({
+                    y: currentScanningDate.getFullYear(),
+                    m: currentScanningDate.getMonth(),
+                    d: currentScanningDate.getDate()
+                });
+                currentScanningDate.setDate(currentScanningDate.getDate() + 1);
+            }
+
             activities.forEach(act => {
-                let everActive = daysToCheck.some(i => isActivityVisibleOnDate(act, i.y, i.m, i.d));
-                if(act.type.includes('checkbox') && everActive) {
-                    streakHTML += `<li>${act.name}: Aktuální <strong>${streaks[act.id].current} dní</strong> | Max: <strong>${streaks[act.id].max} dní</strong></li>`;
+                if (act.type.includes('checkbox')) {
+                    let currentStreak = 0;
+                    let maxStreak = 0;
+
+                    // Spořádáme timeline a spočítáme maxStreak + průběžné budování
+                    timeline.forEach(item => {
+                        if (isActivityVisibleOnDate(act, item.y, item.m, item.d)) {
+                            let status = (db[item.y] && db[item.y][item.m] && db[item.y][item.m][act.id]) ? db[item.y][item.m][act.id][item.d] : false;
+                            if (status) {
+                                currentStreak++;
+                                if (currentStreak > maxStreak) maxStreak = currentStreak;
+                            } else {
+                                currentStreak = 0;
+                            }
+                        }
+                    });
+
+                    // Výpočet reálného AKTUÁLNÍHO STREAKU na základě konce osy (včerejšek / dnešek)
+                    let actualCurrentStreak = 0;
+                    let idx = timeline.length - 1; // Dnešní den
+                    
+                    if (idx >= 0) {
+                        let tToday = timeline[idx];
+                        let todayDone = (db[tToday.y] && db[tToday.y][tToday.m] && db[tToday.y][tToday.m][act.id]) ? db[tToday.y][tToday.m][act.id][tToday.d] : false;
+                        
+                        let yesterdayDone = false;
+                        if (idx > 0) {
+                            let tYest = timeline[idx - 1];
+                            yesterdayDone = (db[tYest.y] && db[tYest.y][tYest.m] && db[tYest.y][tYest.m][act.id]) ? db[tYest.y][tYest.m][act.id][tYest.d] : false;
+                        }
+
+                        // Pokud je splněno dnes, jdeme od dneška dozadu. Pokud dnes ne ale včera ano, jdeme od včerejška. Jinak je to 0.
+                        if (todayDone || yesterdayDone) {
+                            let startIdx = todayDone ? idx : idx - 1;
+                            while (startIdx >= 0) {
+                                let tItem = timeline[startIdx];
+                                if (isActivityVisibleOnDate(act, tItem.y, tItem.m, tItem.d)) {
+                                    let isDone = (db[tItem.y] && db[tItem.y][tItem.m] && db[tItem.y][tItem.m][act.id]) ? db[tItem.y][tItem.m][act.id][tItem.d] : false;
+                                    if (isDone) {
+                                        actualCurrentStreak++;
+                                    } else {
+                                        break; 
+                                    }
+                                }
+                                startIdx--;
+                            }
+                        }
+                    }
+
+                    let everActive = daysToCheck.some(i => isActivityVisibleOnDate(act, i.y, i.m, i.d));
+                    if (everActive) {
+                        streaksHTML += `<li>${act.name}: Aktuální <strong>${actualCurrentStreak} dní</strong> | Max: <strong>${maxStreak} dní</strong></li>`;
+                    }
                 }
             });
-            streakHTML += '</ul>';
+            streaksHTML += '</ul>';
 
+            // Zobrazení výsledků
             container.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                <div><h4>Celkové počty</h4><ul>` + activities.map(a => {
+                <div><h4>Celkové počty splnění</h4><ul>` + activities.map(a => {
                     let everActive = daysToCheck.some(i => isActivityVisibleOnDate(a, i.y, i.m, i.d));
                     return (!a.type.includes('checkbox') || !everActive) ? '' : `<li>${a.name}: <strong>${counts[a.id]}x</strong></li>`;
                 }).join('') + `</ul></div>
-                <div>${streakHTML}</div>
+                <div>${streaksHTML}</div>
             </div>`;
         }
 
