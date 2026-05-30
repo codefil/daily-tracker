@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Cloud Life & Sport Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Tvoje unikátní konfigurace Firebase cloudu
+        const firebaseConfig = {
+            apiKey: "AIzaSyAr6uNcAi96o1UFwrbxFRfzNvruNSBqy6o",
+            authDomain: "daily-tracker-b23eb.firebaseapp.com",
+            databaseURL: "https://daily-tracker-b23eb-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "daily-tracker-b23eb",
+            storageBucket: "daily-tracker-b23eb.firebasestorage.app",
+            messagingSenderId: "885603154404",
+            appId: "1:885603154404:web:48556c6890f0e88b7faff1"
+        };
+
+        // Inicializace Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Export do globálního okna, aby s databází mohl komunikovat zbytek aplikace
+        window.dbRef = (path) => ref(database, path);
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+        window.dbGet = get;
+        
+        // Spustit aplikaci až po inicializaci cloudu
+        window.startAppWithCloud();
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --border-color: #2a2a2a;
+            --text-color: #e0e0e0;
+            --danger-color: rgba(239, 68, 68, 0.15);
+            --danger-text: #ef4444;
+            --success-color: rgba(34, 197, 94, 0.15);
+            --success-text: #22c55e;
+            --primary: #3b82f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        header {
+            max-width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        h1 { font-size: 22px; font-weight: 500; margin: 0; color: #fff; }
+        .controls { display: flex; gap: 10px; }
+        
+        button {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+        button:hover { background-color: #252525; border-color: #555; }
+        button.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+
+        .dashboard-container { display: flex; flex-direction: column; gap: 20px; }
+        .panel { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; }
+        .table-wrapper { width: 100%; overflow-x: hidden; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; table-layout: fixed; }
+        th, td { border: 1px solid var(--border-color); padding: 5px 2px; height: 22px; }
+        th:first-child, td:first-child { text-align: left; font-weight: 500; width: 160px; padding-left: 8px; background-color: var(--panel-bg); }
+
+        th.cell-clickable:hover { background-color: #252525; }
+        
+        .today-header { border: 2px solid #888888 !important; border-radius: 4px; }
+        .selected-day-header { background-color: var(--primary) !important; color: white; border-radius: 50%; display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; }
+        .selected-column { background-color: rgba(59, 130, 246, 0.04); }
+
+        .cell-clickable { cursor: pointer; }
+        .status-red { background-color: var(--danger-color); color: var(--danger-text); }
+        .status-green { background-color: var(--success-color); color: var(--success-text); }
+
+        .cell-number-input { width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: 11px; outline: none; padding: 0; }
+
+        .lower-section { display: flex; gap: 20px; }
+        .flex-1 { flex: 1; }
+
+        .year-progress-container { margin-top: 10px; background-color: #222; border-radius: 10px; height: 16px; width: 100%; position: relative; border: 1px solid var(--border-color); }
+        .year-progress-bar { background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; border-radius: 9px; width: 0%; transition: width 0.5s; }
+        .year-progress-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 11px; line-height: 16px; font-weight: bold; color: white; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; width: 550px; max-height: 85vh; overflow-y: auto; }
+
+        .sport-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .sport-item { background: #121212; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
+        
+        .drag-item { display: flex; align-items: center; justify-content: space-between; background: #121212; padding: 8px; border: 1px solid var(--border-color); margin-bottom: 5px; border-radius: 4px; cursor: move; }
+        .drag-item.dragging { opacity: 0.5; background: #333; }
+
+        .goal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: #121212; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .goal-text { flex: 1; background: transparent; border: none; color: white; font-size: 13px; outline: none; }
+        .goal-done { text-decoration: line-through; color: #666; }
+
+        .diary-paper-layout { display: flex; gap: 20px; height: 70vh; }
+        .diary-write-side { flex: 1.2; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border-color); padding-right: 20px; }
+        .diary-read-side { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .diary-entry { background: #121212; border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; }
+        .diary-date { color: var(--primary); font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+
+        ul { padding-left: 20px; margin: 8px 0; }
+        li { margin-bottom: 4px; }
+        
+        #loading-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#121212; display:flex; justify-content:center; align-items:center; z-index:9999; font-size:18px; color:white; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">⏳ Připojování ke cloudovému trackeru...</div>
+
+    <header>
+        <h1 id="main-title">Načítání...</h1>
+        <div class="controls">
+            <button id="btn-view-week">Týden</button>
+            <button id="btn-view-month" class="active">Měsíc</button>
+            <button id="btn-open-calendar">📅 Kalendář</button>
+            <button id="btn-open-year">🗓️ Celý rok</button>
+            <button id="btn-open-goals" style="background-color: #d97706; color: white;">🎯 Cíle</button>
+            <button id="btn-open-diary" style="background-color: #4b5563;">✍️ Otevřít Deník</button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <section class="panel">
+            <div class="table-wrapper">
+                <table id="main-table">
+                    <thead id="table-head"></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="lower-section">
+            <div class="panel flex-1">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0; font-weight:400; font-size:15px;">Vývoj spánku (Průměr: <span id="avg-sleep" style="color:var(--success-text);">0 hod</span>)</h3>
+                    <div style="font-size:11px; display:flex; gap:5px;">
+                        <button id="chart-sleep-w" style="padding:2px 6px; font-size:11px;">Týden</button>
+                        <button id="chart-sleep-m" class="active" style="padding:2px 6px; font-size:11px;">Měsíc</button>
+                        <button id="chart-sleep-y" style="padding:2px 6px; font-size:11px;">Rok</button>
+                    </div>
+                </div>
+                <div style="height: 180px;"><canvas id="sleepChart"></canvas></div>
+            </div>
+
+            <div class="panel" style="width: 260px;" id="sport-panel">
+                <h3 style="margin-top:0; font-weight:400; font-size:15px;">Sporty: <span id="selected-day-label" style="color:var(--primary);">30. Květen</span></h3>
+                <div id="sport-selectors-container" class="sport-checkbox-group"></div>
+            </div>
+
+            <div class="panel" style="width: 220px;">
+                <h3 style="margin-top:0; font-weight:400; font-size:15px;">Podíl sportů (Měsíc)</h3>
+                <div style="height: 160px;"><canvas id="sportPieChart"></canvas></div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:15px;">
+            <button id="btn-open-settings">⚙️ Upravit řádky aktivit</button>
+            <button id="btn-open-big-stats" style="background-color: var(--primary); color:white;">📊 Velké statistiky</button>
+        </div>
+
+        <div class="panel" style="padding: 10px 15px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px; color:#888;">
+                <span>Postup letošního roku</span>
+                <span id="year-progress-date"></span>
+            </div>
+            <div class="year-progress-container">
+                <div class="year-progress-bar" id="year-bar"></div>
+                <div class="year-progress-text" id="year-bar-text">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="calendar-modal" class="modal"><div class="modal-content">
+        <h3 style="margin-top:0;">Změnit měsíc</h3>
+        <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <select id="select-month" style="flex:1; padding:8px; background:#121212; color:white; border:1px solid var(--border-color);"></select>
+            <select id="select-year" style="flex:1; padding:8px; background:#121212; color:white; border:1px solid var(--border-color);"></select>
+        </div>
+        <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+            <button onclick="closeModal('calendar-modal')">Zavřít</button>
+            <button id="btn-confirm-date" style="background:var(--primary); color:white;">Otevřít</button>
+        </div>
+    </div></div>
+
+    <div id="diary-modal" class="modal"><div class="modal-content" style="width:90vw; max-width:1200px;">
+        <h2 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:10px;">✍️ Osobní velký sešit zápisků</h2>
+        <div class="diary-paper-layout">
+            <div class="diary-write-side">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold; font-size:14px;">Vyber datum zápisu:</span>
+                    <input type="date" id="diary-input-date" style="background:#121212; color:white; border:1px solid var(--border-color); padding:6px 12px; font-size:14px; border-radius:4px;">
+                </div>
+                <textarea id="diary-text" style="flex:1; background:#121212; color:white; border:1px solid var(--border-color); border-radius:6px; padding:15px; box-sizing:border-box; resize:none; font-size:15px; line-height:1.6;" placeholder="Rozepiš se, co se dneska zajímavého stalo..."></textarea>
+                <button id="btn-save-diary" style="background:var(--success-text); color:white; border:none; padding:12px; font-size:14px; font-weight:bold; border-radius:6px;">Uložit záznam do sešitu</button>
+            </div>
+            <div class="diary-read-side">
+                <input type="text" id="diary-search" placeholder="🔍 Rychlé vyhledávání v zápiscích..." style="width:100%; padding:10px; background:#121212; color:white; border:1px solid var(--border-color); box-sizing:border-box; border-radius:4px; font-size:13px;">
+                <div id="diary-logs-container" style="flex:1; overflow-y:auto; padding-right:5px;"></div>
+            </div>
+        </div>
+        <div style="text-align:right; margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><button onclick="closeModal('diary-modal')" style="padding:8px 20px;">Zavřít sešit</button></div>
+    </div></div>
+
+    <div id="goals-modal" class="modal"><div class="modal-content" style="width:600px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0;">🎯 Roční cíle pro rok <span id="goals-year-title"></span></h2>
+            <button id="btn-add-goal" style="background:var(--primary); color:white;">+ Přidat cíl</button>
+        </div>
+        <div id="goals-list-container" style="max-height:50vh; overflow-y:auto; margin-bottom:15px;"></div>
+        <div style="text-align:right; border-top:1px solid var(--border-color); padding-top:15px;">
+            <button onclick="closeModal('goals-modal')" style="padding:8px 20px;">Zavřít</button>
+        </div>
+    </div></div>
+
+    <div id="big-stats-modal" class="modal"><div class="modal-content" style="width:550px;">
+        <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+            <h2 style="margin:0;">Centrum Statistik & Analýzy</h2>
+            <select id="stats-period" style="padding:5px; background:#121212; color:white; border:1px solid var(--border-color);">
+                <option value="week">Tento týden</option>
+                <option value="month" selected>Tento měsíc</option>
+                <option value="year">Tento rok</option>
+                <option value="lifetime">Úplně vše (Lifetime)</option>
+            </select>
+        </div>
+        <div id="stats-content-area"></div>
+        <div style="text-align:right; margin-top:20px;"><button onclick="closeModal('big-stats-modal')">Zavřít</button></div>
+    </div></div>
+
+    <div id="year-modal" class="modal"><div class="modal-content" style="width:95vw; max-width:1400px;">
+        <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+            <h2 style="margin:0;">Přehled celého roku</h2>
+            <select id="year-overview-select" style="padding:6px 12px; background:#121212; color:white; border:1px solid var(--border-color); border-radius:6px; font-size:14px;"></select>
+        </div>
+        <div id="year-tables-container" style="display:grid; grid-template-columns:1fr; gap:15px; max-height:70vh; overflow-y:auto;"></div>
+        <div style="text-align:right; margin-top:20px;"><button onclick="closeModal('year-modal')">Zavřít</button></div>
+    </div></div>
+
+    <div id="settings-modal" class="modal"><div class="modal-content">
+        <h3 style="margin-top:0;">Správa a řazení řádků</h3>
+        <p style="color:#aaa; font-size:11px; margin-bottom:10px;">Chytni položku za ikonu ☰ a přetáhni ji na libovolnou pozici pro změnu pořadí.</p>
+        <div id="modal-activity-list" style="max-height:250px; overflow-y:auto; margin-bottom:15px;"></div>
+        
+        <h4>Přidat nový řádek</h4>
+        <input type="text" id="new-act-name" placeholder="Název aktivity (např. Procházka)" style="width:100%; padding:8px; background:#121212; color:white; border:1px solid var(--border-color); margin-bottom:10px; box-sizing:border-box;">
+        <select id="new-act-type" style="width:100%; padding:8px; background:#121212; color:white; border:1px solid var(--border-color); margin-bottom:10px;">
+            <option value="checkbox">Zaškrtávací (Ano/Ne)</option>
+            <option value="number">Číselné rozmezí</option>
+        </select>
+        <div id="modal-limit-group" style="display:none; margin-bottom:15px;">
+            Zelená barva od <input type="number" id="new-act-min" value="7" style="width:40px;"> do <input type="number" id="new-act-max" value="10" style="width:40px;">
+        </div>
+
+        <div style="text-align:right; display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+            <button onclick="closeModal('settings-modal')">Zavřít</button>
+            <button id="btn-save-new-act" style="background:var(--primary); color:white;">Přidat položku</button>
+        </div>
+    </div></div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+
+        const today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonth = today.getMonth();
+        let selectedDay = today.getDate();
+        let currentView = 'month';
+        let sleepGraphPeriod = 'month';
+        let yearOverviewSelectedYear = today.getFullYear();
+
+        const monthNames = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
+        const sportsList = ["Běh", "Gym", "Fotbal", "Kolo", "Plavání", "Tenis", "Ostatní"];
+
+        // Výchozí struktury dat pro případ, že cloud bude prázdný
+        let activities = [
+            { id: 'sleep', name: 'Spánek (hodiny)', type: 'number', min: 6, max: 10 },
+            { id: 'learn', name: 'Učení', type: 'checkbox' },
+            { id: 'home', name: 'Práce / Pomoc doma', type: 'checkbox' },
+            { id: 'active', name: 'Aktivita', type: 'checkbox' },
+            { id: 'stretch', name: 'Protažení', type: 'checkbox' },
+            { id: 'read', name: 'Čtení', type: 'checkbox' },
+            { id: 'typing', name: 'Psaní všemi deseti', type: 'checkbox' },
+            { id: 'piano', name: 'Hraní na klavír', type: 'checkbox' },
+            { id: 'cold', name: 'Otužení', type: 'checkbox' },
+            { id: 'chill', name: 'Chill', type: 'checkbox' },
+            { id: 'rating', name: 'Hodnocení dne (1-10)', type: 'number', min: 7, max: 10 }
+        ];
+
+        let db = {};
+        let diary = {};
+        let goals = {};
+
+        let sleepChartInstance = null;
+        let sportChartInstance = null;
+
+        // Tuto funkci zavolá Firebase, jakmile se úspěšně připojí
+        window.startAppWithCloud = function() {
+            // Stáhnout kompletní databázi z cloudu najednou
+            window.dbOnValue(window.dbRef("cloud_tracker_data"), (snapshot) => {
+                const cloudData = snapshot.val();
+                
+                if (cloudData) {
+                    db = cloudData.db || {};
+                    diary = cloudData.diary || {};
+                    activities = cloudData.activities || activities;
+                    goals = cloudData.goals || {};
+                }
+                
+                // Inicializace struktur pro aktuální měsíc, pokud chybí
+                checkAndInitData(currentYear, currentMonth);
+                
+                // Schovat loading a vykreslit appku
+                document.getElementById('loading-overlay').style.display = 'none';
+                
+                buildCalendarSelects();
+                renderDashboard();
+                updateYearProgressBar();
+            }, { onlyOnce: false }); // Vyžaduje 'false', aby se změny na mobilu ihned překreslily na PC
+        };
+
+        function saveToCloud() {
+            window.dbSet(window.dbRef("cloud_tracker_data"), {
+                db: db,
+                diary: diary,
+                activities: activities,
+                goals: goals
+            });
+        }
+
+        function getDaysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
+
+        function checkAndInitData(year, month) {
+            if (!db[year]) db[year] = {};
+            if (!db[year][month]) {
+                db[year][month] = { sports: {} };
+                activities.forEach(act => {
+                    db[year][month][act.id] = Array(32).fill(act.type === 'checkbox' ? false : 0);
+                });
+            }
+        }
+
+        function init() {
+            setupEventListeners();
+            document.getElementById('diary-input-date').value = today.toISOString().split('T')[0];
+        }
+
+        function buildCalendarSelects() {
+            const mSel = document.getElementById('select-month');
+            const ySel = document.getElementById('select-year');
+            const yoSel = document.getElementById('year-overview-select');
+            
+            mSel.innerHTML = ''; ySel.innerHTML = ''; yoSel.innerHTML = '';
+            
+            monthNames.forEach((m, idx) => mSel.innerHTML += `<option value="${idx}" ${idx===currentMonth?'selected':''}>${m}</option>`);
+            for(let y = 2026; y <= 2032; y++) {
+                ySel.innerHTML += `<option value="${y}" ${y===currentYear?'selected':''}>${y}</option>`;
+                yoSel.innerHTML += `<option value="${y}" ${y===yearOverviewSelectedYear?'selected':''}>${y}</option>`;
+            }
+        }
+
+        function renderDashboard() {
+            document.getElementById('main-title').innerText = `${monthNames[currentMonth]} ${currentYear}`;
+            checkAndInitData(currentYear, currentMonth);
+            renderTable();
+            renderSleepChart();
+            renderSportPanel();
+            renderSportPieChart();
+        }
+
+        function renderTable() {
+            const head = document.getElementById('table-head');
+            const body = document.getElementById('table-body');
+            const totalDays = getDaysInMonth(currentYear, currentMonth);
+
+            let startDay = 1;
+            let endDay = totalDays;
+            if (currentView === 'week') {
+                startDay = Math.max(1, selectedDay - 3);
+                endDay = Math.min(totalDays, startDay + 6);
+            }
+
+            let headHTML = `<tr><th>Aktivita</th>`;
+            for (let d = startDay; d <= endDay; d++) {
+                let isSelected = (d === selectedDay) ? 'selected-day-header' : '';
+                let isToday = (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) ? 'today-header' : '';
+                headHTML += `<th class="cell-clickable ${isToday}" onclick="selectDay(${d})"><span class="${isSelected}">${d}</span></th>`;
+            }
+            headHTML += `</tr>`;
+            head.innerHTML = headHTML;
+
+            let bodyHTML = '';
+            activities.forEach(act => {
+                bodyHTML += `<tr><td>${act.name}</td>`;
+                for (let d = startDay; d <= endDay; d++) {
+                    if(!db[currentYear][currentMonth][act.id]) {
+                        db[currentYear][currentMonth][act.id] = Array(32).fill(act.type === 'checkbox' ? false : 0);
+                    }
+                    let val = db[currentYear][currentMonth][act.id][d];
+                    let colClass = (d === selectedDay) ? 'selected-column' : '';
+                    
+                    if (act.type === 'checkbox') {
+                        let isGreen = val ? 'status-green' : 'status-red';
+                        bodyHTML += `<td class="cell-clickable ${isGreen} ${colClass}" onclick="toggleCheckbox('${act.id}', ${d})">${val ? '✓' : '•'}</td>`;
+                    } else {
+                        let isGreen = (val >= act.min && val <= act.max) ? 'status-green' : 'status-red';
+                        bodyHTML += `<td class="${isGreen} ${colClass}">
+                            <input type="number" class="cell-number-input" value="${val || ''}" onchange="updateNumber(this, '${act.id}', ${d})">
+                        </td>`;
+                    }
+                }
+                bodyHTML += `</tr>`;
+            });
+            body.innerHTML = bodyHTML;
+        }
+
+        window.selectDay = function(d) { selectedDay = d; renderTable(); renderSportPanel(); }
+        
+        window.toggleCheckbox = function(id, d) { 
+            db[currentYear][currentMonth][id][d] = !db[currentYear][currentMonth][id][d]; 
+            saveToCloud();
+            renderTable(); 
+        }
+        
+        window.updateNumber = function(input, id, d) { 
+            db[currentYear][currentMonth][id][d] = parseFloat(input.value) || 0; 
+            saveToCloud();
+            renderTable(); 
+            if(id==='sleep') renderSleepChart(); 
+        }
+
+        function renderSleepChart() {
+            const ctx = document.getElementById('sleepChart').getContext('2d');
+            let dataPoints = [];
+            let labels = [];
+
+            if (sleepGraphPeriod === 'week') {
+                let total = getDaysInMonth(currentYear, currentMonth);
+                let start = Math.max(1, selectedDay - 3);
+                let end = Math.min(total, start + 6);
+                for(let d=start; d<=end; d++) { labels.push(`${d}.`); dataPoints.push(db[currentYear][currentMonth]['sleep'] ? db[currentYear][currentMonth]['sleep'][d] : 0); }
+            } else if (sleepGraphPeriod === 'month') {
+                let total = getDaysInMonth(currentYear, currentMonth);
+                for(let d=1; d<=total; d++) { labels.push(`${d}.`); dataPoints.push(db[currentYear][currentMonth]['sleep'] ? db[currentYear][currentMonth]['sleep'][d] : 0); }
+            } else if (sleepGraphPeriod === 'year') {
+                for(let m=0; m<12; m++) {
+                    checkAndInitData(currentYear, m);
+                    let tDays = getDaysInMonth(currentYear, m);
+                    let sum = db[currentYear][m]['sleep'] ? db[currentYear][m]['sleep'].slice(1, tDays+1).reduce((a,b)=>a+b,0) : 0;
+                    labels.push(monthNames[m].substring(0,3));
+                    dataPoints.push(parseFloat((sum / tDays).toFixed(1)));
+                }
+            }
+
+            let avg = dataPoints.length > 0 ? (dataPoints.reduce((a,b)=>a+b,0) / dataPoints.length).toFixed(1) : 0;
+            document.getElementById('avg-sleep').innerText = `${avg} hod`;
+
+            if(sleepChartInstance) sleepChartInstance.destroy();
+            sleepChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: dataPoints, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.02)', borderWidth: 1.5, pointRadius: sleepGraphPeriod==='month'?1:3, tension: 0.15 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { min: 4, max: 12, grid: { color: '#222' } }, x: { grid: { display: false } } } }
+            });
+        }
+
+        function renderSportPanel() {
+            document.getElementById('selected-day-label').innerText = `${selectedDay}. ${monthNames[currentMonth]}`;
+            const container = document.getElementById('sport-selectors-container');
+            if(!db[currentYear][currentMonth].sports) db[currentYear][currentMonth].sports = {};
+            if(!db[currentYear][currentMonth].sports[selectedDay]) db[currentYear][currentMonth].sports[selectedDay] = {};
+
+            let html = '';
+            sportsList.forEach(sport => {
+                let checked = db[currentYear][currentMonth].sports[selectedDay][sport] ? 'checked' : '';
+                html += `<div class="sport-item">
+                    <input type="checkbox" id="sport-${sport}" ${checked} onchange="toggleSport('${sport}')">
+                    <label for="sport-${sport}">${sport}</label>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.toggleSport = function(sport) {
+            db[currentYear][currentMonth].sports[selectedDay][sport] = document.getElementById(`sport-${sport}`).checked;
+            let hasAny = sportsList.some(s => db[currentYear][currentMonth].sports[selectedDay][s]);
+            if(db[currentYear][currentMonth]['active']) {
+                db[currentYear][currentMonth]['active'][selectedDay] = hasAny;
+            }
+            saveToCloud();
+            renderSportPieChart();
+            renderTable();
+        }
+
+        function renderSportPieChart() {
+            const ctx = document.getElementById('sportPieChart').getContext('2d');
+            let counts = Array(sportsList.length).fill(0);
+            let totalDays = getDaysInMonth(currentYear, currentMonth);
+
+            for(let d=1; d<=totalDays; d++) {
+                if(db[currentYear][currentMonth].sports && db[currentYear][currentMonth].sports[d]) {
+                    sportsList.forEach((s, idx) => { if(db[currentYear][currentMonth].sports[d][s]) counts[idx]++; });
+                }
+            }
+
+            if(sportChartInstance) sportChartInstance.destroy();
+            sportChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: sportsList,
+                    datasets: [{ data: counts, backgroundColor: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6b7280'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff', font: { weight: 'bold', size: 9 },
+                            formatter: (value, ctx) => value > 0 ? ctx.chart.data.labels[ctx.dataIndex] : ''
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateYearProgressBar() {
+            const start = new Date(today.getFullYear(), 0, 1);
+            const diff = today - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay) + 1;
+            const daysInYear = (today.getFullYear() % 4 === 0) ? 366 : 365;
+            const pct = ((dayOfYear / daysInYear) * 100).toFixed(1);
+
+            document.getElementById('year-bar').style.width = pct + '%';
+            document.getElementById('year-bar-text').innerText = pct + '%';
+            document.getElementById('year-progress-date').innerText = `Den ${dayOfYear} z ${daysInYear}`;
+        }
+
+        function renderGoals() {
+            const container = document.getElementById('goals-list-container');
+            if (!goals[currentYear]) goals[currentYear] = [];
+            
+            let html = '';
+            goals[currentYear].forEach((g, idx) => {
+                html += `<div class="goal-row">
+                    <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${idx})">
+                    <input type="text" class="goal-text ${g.done ? 'goal-done' : ''}" value="${g.text}" onchange="updateGoalText(${idx}, this.value)" placeholder="Zadej cíl...">
+                    <button onclick="deleteGoal(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer;">✕</button>
+                </div>`;
+            });
+            if(goals[currentYear].length === 0) html = '<p style="color:#666; text-align:center;">Žádné stanovené cíle pro tento rok.</p>';
+            container.innerHTML = html;
+        }
+
+        window.toggleGoal = function(idx) {
+            goals[currentYear][idx].done = !goals[currentYear][idx].done;
+            saveToCloud(); renderGoals();
+        }
+
+        window.updateGoalText = function(idx, val) {
+            goals[currentYear][idx].text = val;
+            saveToCloud();
+        }
+
+        window.deleteGoal = function(idx) {
+            goals[currentYear].splice(idx, 1);
+            saveToCloud(); renderGoals();
+        }
+
+        function renderSettingsList() {
+            const container = document.getElementById('modal-activity-list');
+            container.innerHTML = '';
+            activities.forEach((act, idx) => {
+                const item = document.createElement('div');
+                item.className = 'drag-item';
+                item.draggable = true;
+                item.dataset.index = idx;
+                item.innerHTML = `
+                    <span style="display:flex; align-items:center; gap:10px;">
+                        <span style="cursor:grab; color:#666;">☰</span>
+                        <span>${act.name}</span>
+                    </span>
+                    <button onclick="deleteActivity('${act.id}')" style="color:var(--danger-text); background:none; border:none; cursor:pointer;">Odebrat</button>
+                `;
+                
+                item.addEventListener('dragstart', () => item.classList.add('dragging'));
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                    reorderActivities();
+                });
+                container.appendChild(item);
+            });
+
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const draggingElement = document.querySelector('.dragging');
+                if (afterElement == null) {
+                    container.appendChild(draggingElement);
+                } else {
+                    container.insertBefore(draggingElement, afterElement);
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.drag-item:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function reorderActivities() {
+            const currentItems = [...document.querySelectorAll('.drag-item')];
+            let newOrder = [];
+            currentItems.forEach(item => {
+                let idx = parseInt(item.dataset.index);
+                newOrder.push(activities[idx]);
+            });
+            activities = newOrder;
+            saveToCloud();
+            renderDashboard();
+            renderSettingsList();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('btn-open-calendar').onclick = () => document.getElementById('calendar-modal').style.display = 'flex';
+            document.getElementById('btn-open-settings').onclick = () => { document.getElementById('settings-modal').style.display = 'flex'; renderSettingsList(); };
+            document.getElementById('btn-open-year').onclick = () => { document.getElementById('year-modal').style.display = 'flex'; renderYearView(); };
+            document.getElementById('btn-open-diary').onclick = () => { document.getElementById('diary-modal').style.display = 'flex'; renderDiaryLogs(); };
+            document.getElementById('btn-open-big-stats').onclick = () => { document.getElementById('big-stats-modal').style.display = 'flex'; calculateBigStats(); };
+            
+            document.getElementById('btn-open-goals').onclick = () => {
+                document.getElementById('goals-year-title').innerText = currentYear;
+                renderGoals();
+                document.getElementById('goals-modal').style.display = 'flex';
+            };
+
+            document.getElementById('btn-add-goal').onclick = () => {
+                if (!goals[currentYear]) goals[currentYear] = [];
+                goals[currentYear].push({ id: Date.now(), text: '', done: false });
+                saveToCloud(); renderGoals();
+            };
+
+            document.getElementById('year-overview-select').onchange = (e) => {
+                yearOverviewSelectedYear = parseInt(e.target.value);
+                renderYearView();
+            };
+
+            document.getElementById('btn-confirm-date').onclick = () => {
+                currentMonth = parseInt(document.getElementById('select-month').value);
+                currentYear = parseInt(document.getElementById('select-year').value);
+                selectedDay = 1; renderDashboard(); closeModal('calendar-modal');
+            };
+
+            document.getElementById('btn-save-diary').onclick = () => {
+                let dDate = document.getElementById('diary-input-date').value;
+                let dText = document.getElementById('diary-text').value.trim();
+                if(!dDate || !dText) return;
+                diary[dDate] = dText;
+                saveToCloud();
+                document.getElementById('diary-text').value = '';
+                renderDiaryLogs();
+            };
+            document.getElementById('diary-search').oninput = () => renderDiaryLogs();
+
+            document.getElementById('chart-sleep-w').onclick = (e) => { sleepGraphPeriod = 'week'; selectSleepBtn(e.target); renderSleepChart(); };
+            document.getElementById('chart-sleep-m').onclick = (e) => { sleepGraphPeriod = 'month'; selectSleepBtn(e.target); renderSleepChart(); };
+            document.getElementById('chart-sleep-y').onclick = (e) => { sleepGraphPeriod = 'year'; selectSleepBtn(e.target); renderSleepChart(); };
+
+            document.getElementById('btn-view-week').onclick = (e) => { currentView = 'week'; toggleActiveViewBtn(e.target); renderTable(); };
+            document.getElementById('btn-view-month').onclick = (e) => { currentView = 'month'; toggleActiveViewBtn(e.target); renderTable(); };
+
+            document.getElementById('stats-period').onchange = () => calculateBigStats();
+            document.getElementById('new-act-type').onchange = (e) => { document.getElementById('modal-limit-group').style.display = e.target.value === 'number' ? 'block' : 'none'; };
+
+            document.getElementById('btn-save-new-act').onclick = () => {
+                const name = document.getElementById('new-act-name').value.trim();
+                const type = document.getElementById('new-act-type').value;
+                if(!name) return;
+                const id = 'custom_' + Date.now();
+                let newAct = { id, name, type };
+                if(type==='number') {
+                    newAct.min = parseFloat(document.getElementById('new-act-min').value) || 0;
+                    newAct.max = parseFloat(document.getElementById('new-act-max').value) || 24;
+                }
+                activities.push(newAct);
+                db[currentYear][currentMonth][id] = Array(32).fill(type === 'checkbox' ? false : 0);
+                saveToCloud();
+                document.getElementById('new-act-name').value = '';
+                renderDashboard(); renderSettingsList();
+            };
+        }
+
+        function selectSleepBtn(btn) {
+            document.getElementById('chart-sleep-w').classList.remove('active');
+            document.getElementById('chart-sleep-m').classList.remove('active');
+            document.getElementById('chart-sleep-y').classList.remove('active');
+            btn.classList.add('active');
+        }
+
+        function toggleActiveViewBtn(target) {
+            document.getElementById('btn-view-week').classList.remove('active');
+            document.getElementById('btn-view-month').classList.remove('active');
+            target.classList.add('active');
+        }
+
+        window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
+
+        function renderDiaryLogs() {
+            const container = document.getElementById('diary-logs-container');
+            const term = document.getElementById('diary-search').value.toLowerCase();
+            let html = '';
+            let sortedDates = Object.keys(diary).sort().reverse();
+            let count = 0;
+
+            sortedDates.forEach(date => {
+                let text = diary[date];
+                if (date.includes(term) || text.toLowerCase().includes(term)) {
+                    count++;
+                    let fDate = new Date(date).toLocaleDateString('cs-CZ', {day:'numeric', month:'long', year:'numeric'});
+                    html += `<div class="diary-entry">
+                        <div class="diary-date">${fDate}</div>
+                        <div style="white-space: pre-wrap; line-height:1.5;">${text}</div>
+                    </div>`;
+                }
+            });
+            if(count === 0) html = '<p style="color:#666; text-align:center;">Žádné záznamy.</p>';
+            container.innerHTML = html;
+        }
+
+        function calculateBigStats() {
+            const period = document.getElementById('stats-period').value;
+            const container = document.getElementById('stats-content-area');
+
+            let daysToCheck = [];
+            
+            if (period === 'week') {
+                let totalM = getDaysInMonth(currentYear, currentMonth);
+                let start = Math.max(1, selectedDay - 3);
+                let end = Math.min(totalM, start + 6);
+                for(let d=start; d<=end; d++) daysToCheck.push({y: currentYear, m: currentMonth, d});
+            } else if (period === 'month') {
+                let totalM = getDaysInMonth(currentYear, currentMonth);
+                for(let d=1; d<=totalM; d++) daysToCheck.push({y: currentYear, m: currentMonth, d});
+            } else if (period === 'year') {
+                for(let m=0; m<12; m++) {
+                    checkAndInitData(currentYear, m);
+                    let tD = getDaysInMonth(currentYear, m);
+                    for(let d=1; d<=tD; d++) daysToCheck.push({y: currentYear, m, d});
+                }
+            } else if (period === 'lifetime') {
+                for(let y=2026; y<=2032; y++) {
+                    if(db[y]) {
+                        for(let m=0; m<12; m++) {
+                            if(db[y][m]) {
+                                let tD = getDaysInMonth(y, m);
+                                for(let d=1; d<=tD; d++) daysToCheck.push({y: y, m, d});
+                            }
+                        }
+                    }
+                }
+            }
+
+            let counts = {};
+            activities.forEach(a => counts[a.id] = 0);
+            let sportCounts = {};
+            sportsList.forEach(s => sportCounts[s] = 0);
+
+            let streaks = {};
+            activities.forEach(a => { if(a.type === 'checkbox') streaks[a.id] = { current: 0, max: 0 }; });
+
+            let ratingSum = 0, ratingDays = 0, footballSleepSum = 0, footballSleepDays = 0, normalSleepSum = 0, normalSleepDays = 0;
+
+            activities.forEach(act => {
+                if (act.type === 'checkbox') {
+                    let currentStreak = 0;
+                    daysToCheck.forEach(item => {
+                        if (db[item.y] && db[item.y][item.m] && db[item.y][item.m][act.id] && db[item.y][item.m][act.id][item.d]) {
+                            currentStreak++;
+                            counts[act.id]++;
+                        } else {
+                            currentStreak = 0;
+                        }
+                        if (currentStreak > streaks[act.id].max) streaks[act.id].max = currentStreak;
+                    });
+                    streaks[act.id].current = currentStreak;
+                }
+            });
+
+            daysToCheck.forEach(item => {
+                if(!db[item.y] || !db[item.y][item.m]) return;
+                let dayData = db[item.y][item.m];
+
+                let rVal = dayData['rating'] ? dayData['rating'][item.d] : 0;
+                if(rVal > 0) { ratingSum += rVal; ratingDays++; }
+
+                let isFootball = dayData.sports && dayData.sports[item.d] && dayData.sports[item.d]['Fotbal'];
+                let sleepVal = dayData['sleep'] ? dayData['sleep'][item.d] : 0;
+                
+                if (sleepVal > 0) {
+                    if (isFootball) { footballSleepSum += sleepVal; footballSleepDays++; } 
+                    else { normalSleepSum += sleepVal; normalSleepDays++; }
+                }
+
+                if (dayData.sports && dayData.sports[item.d]) {
+                    sportsList.forEach(s => { if(dayData.sports[item.d][s]) sportCounts[s]++; });
+                }
+            });
+
+            let avgRating = ratingDays > 0 ? (ratingSum / ratingDays).toFixed(1) : '0';
+            
+            // Kód pro zobrazení aktuálního i maximálního streaku
+            let streakHTML = '<h4>🔥 Série (Dny v řadě)</h4><ul>';
+            activities.forEach(act => {
+                if(act.type === 'checkbox') {
+                    let curr = streaks[act.id].current;
+                    let max = streaks[act.id].max;
+                    streakHTML += `<li>${act.name}: Aktuální <strong>${curr} dní</strong> ${curr > 0 ? '🔥' : '•'} | Max: <strong>${max} dní</strong> 🏆</li>`;
+                }
+            });
+            streakHTML += '</ul>';
+
+            let corelationHTML = '<h4>🔗 Souvislosti dat</h4><ul>';
+            if (footballSleepDays > 0 && normalSleepDays > 0) {
+                let fAvg = footballSleepSum / footballSleepDays;
+                let nAvg = normalSleepSum / normalSleepDays;
+                let diff = (fAvg - nAvg).toFixed(1);
+                if (Math.abs(diff) > 0.1) {
+                    corelationHTML += `<li>V dny s <strong>Fotbalem</strong> spíš v průměru o <strong>${Math.abs(diff)} hod</strong> ${diff > 0 ? 'více' : 'méně'} než jindy.</li>`;
+                } else { corelationHTML += `<li>Tvůj spánek je stabilní bez ohledu na zátěž.</li>`; }
+            } else { corelationHTML += `<li>Zadej více dat pro zobrazení souvislostí.</li>`; }
+            corelationHTML += `</ul>`;
+
+            let html = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div>
+                    <h4>📊 Celkové počty</h4><ul>`;
+                    activities.forEach(act => {
+                        if(act.id !== 'sleep' && act.id !== 'rating') {
+                            html += `<li>${act.name}: <strong>${counts[act.id]}x</strong></li>`;
+                        }
+                    });
+                    html += `</ul><h4>⚽ Přehled sportů</h4><ul>`;
+                    sportsList.forEach(s => { html += `<li>${s}: <strong>${sportCounts[s]}x</strong></li>`; });
+                    html += `</ul>
+                </div>
+                <div>${streakHTML}${corelationHTML}</div>
+            </div>
+            <div style="margin-top:15px; padding:10px; background:#121212; border-radius:4px; border:1px solid var(--border-color); text-align:center;">
+                Průměrné hodnocení dne v tomto období: <strong style="color:var(--primary); font-size:14px;">${avgRating} / 10</strong>
+            </div>`;
+
+            container.innerHTML = html;
+        }
+
+        window.deleteActivity = function(id) { 
+            activities = activities.filter(a => a.id !== id); 
+            saveToCloud(); 
+            renderDashboard(); 
+            renderSettingsList(); 
+        }
+
+        function renderYearView() {
+            const container = document.getElementById('year-tables-container');
+            let html = '';
+
+            for(let m=0; m<12; m++) {
+                checkAndInitData(yearOverviewSelectedYear, m);
+                let days = getDaysInMonth(yearOverviewSelectedYear, m);
+                html += `<div class="panel">
+                    <h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4>
+                    <table style="font-size:9px;">
+                        <tr><th>Aktivita</th>`;
+                        for(let d=1; d<=days; d++) html += `<th>${d}</th>`;
+                html += `</tr>`;
+                
+                activities.forEach(act => {
+                    html += `<tr><td style="width:110px;">${act.name}</td>`;
+                    for(let d=1; d<=days; d++) {
+                        if(!db[yearOverviewSelectedYear][m][act.id]) {
+                            db[yearOverviewSelectedYear][m][act.id] = Array(32).fill(act.type === 'checkbox' ? false : 0);
+                        }
+                        let val = db[yearOverviewSelectedYear][m][act.id][d];
+                        if(act.type=='checkbox') {
+                            html += `<td style="background-color:${val?'var(--success-color)':'var(--danger-color)'}; color:${val?'var(--success-text)':'var(--danger-text)'};">${val?'✓':'•'}</td>`;
+                        } else {
+                            let isGreen = (val >= act.min && val <= act.max);
+                            html += `<td style="background-color:${isGreen?'var(--success-color)':'var(--danger-color)'}; color:${isGreen?'var(--success-text)':'var(--danger-text)'};">${val||0}</td>`;
+                        }
+                    }
+                    html += `</tr>`;
+                });
+                html += `</table></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
