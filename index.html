@@ -26,14 +26,35 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Export do globálního okna, aby s databází mohl komunikovat zbytek aplikace
+        // ZDE SI ZMĚŇ SVŮJ PIN (nechej ho v uvozovkách)
+        const TAJNY_PIN = "1187"; 
+
+        // Funkce pro ověření přístupu
+        window.overitZamek = function() {
+            if (localStorage.getItem('tracker_unlocked') === 'true') {
+                return true;
+            }
+            let zadanyPin = prompt("Aplikace je uzamčena.\nZadej přístupový PIN:");
+            if (zadanyPin === TAJNY_PIN) {
+                localStorage.setItem('tracker_unlocked', 'true');
+                return true;
+            } else {
+                alert("Nesprávný PIN. Přístup odepřen.");
+                document.body.innerHTML = '<div style="color:white; text-align:center; margin-top:20vh; font-size:20px;">🔒 Přístup odepřen. Obnov stránku a zkus to znovu.</div>';
+                return false;
+            }
+        };
+
+        // Export do globálního okna
         window.dbRef = (path) => ref(database, path);
         window.dbSet = set;
         window.dbOnValue = onValue;
         window.dbGet = get;
         
-        // Spustit aplikaci až po inicializaci cloudu
-        window.startAppWithCloud();
+        // Spustit aplikaci až po ověření PINu
+        if (window.overitZamek()) {
+            window.startAppWithCloud();
+        }
     </script>
 
     <style>
