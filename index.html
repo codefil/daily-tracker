@@ -11,7 +11,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Tvoje unikátní konfigurace Firebase cloudu
         const firebaseConfig = {
             apiKey: "AIzaSyAr6uNcAi96o1UFwrbxFRfzNvruNSBqy6o",
             authDomain: "daily-tracker-b23eb.firebaseapp.com",
@@ -22,14 +21,11 @@
             appId: "1:885603154404:web:48556c6890f0e88b7faff1"
         };
 
-        // Inicializace Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // ZDE SI ZMĚŇ SVŮJ PIN (nechej ho v uvozovkách)
         const TAJNY_PIN = "1234"; 
 
-        // Funkce pro ověření přístupu
         window.overitZamek = function() {
             if (localStorage.getItem('tracker_unlocked') === 'true') {
                 return true;
@@ -45,13 +41,11 @@
             }
         };
 
-        // Export do globálního okna
         window.dbRef = (path) => ref(database, path);
         window.dbSet = set;
         window.dbOnValue = onValue;
         window.dbGet = get;
         
-        // Spustit aplikaci až po ověření PINu
         if (window.overitZamek()) {
             window.startAppWithCloud();
         }
@@ -119,7 +113,6 @@
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; table-layout: fixed; }
         th, td { border: 1px solid var(--border-color); padding: 5px 2px; height: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        /* Šířka sloupců na PC */
         th:first-child, td:first-child { text-align: left; font-weight: 500; width: 160px; padding-left: 8px; background-color: var(--panel-bg); position: sticky; left: 0; z-index: 10; }
 
         th.cell-clickable:hover { background-color: #252525; }
@@ -146,7 +139,7 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 1000; padding: 10px; box-sizing: border-box; }
         .modal-content { background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; width: 550px; max-width: 100%; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
 
-        .sport-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .sport-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
         .sport-item { background: #121212; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
         
         .drag-item { display: flex; align-items: center; justify-content: space-between; background: #121212; padding: 8px; border: 1px solid var(--border-color); margin-bottom: 5px; border-radius: 4px; }
@@ -167,11 +160,6 @@
         
         #loading-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#121212; display:flex; justify-content:center; align-items:center; z-index:9999; font-size:18px; color:white; }
 
-        .radio-box-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .radio-box-option { flex: 1; background: #121212; border: 1px solid var(--border-color); padding: 8px; border-radius: 4px; text-align: center; cursor: pointer; font-size: 11px; }
-        .radio-box-option input { display: none; }
-        .radio-box-option.selected { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
-
         .delete-option-btn { width: 100%; text-align: left; padding: 12px; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 6px; color: white; cursor: pointer; transition: background 0.2s; }
         .delete-option-btn:hover { background: #252525; border-color: #444; }
         
@@ -188,12 +176,10 @@
             .controls button { padding: 6px 4px; font-size: 11px; text-align: center; }
             #btn-open-settings { grid-column: span 3; }
 
-            /* Odstranění posouvání v TÝDENNÍM režimu a zafixování šířky */
             .body-view-week .table-wrapper { overflow-x: hidden; }
             .body-view-week table { table-layout: fixed; width: 100%; }
             .body-view-week th:first-child, .body-view-week td:first-child { width: 110px; min-width: 110px; font-size: 10px; padding-left: 4px; }
             
-            /* Měsíční režim na mobilu posun povolí, aby se dny nemačkaly */
             .body-view-month .table-wrapper { overflow-x: auto; }
             .body-view-month table { table-layout: auto; width: auto; }
             .body-view-month th:first-child, .body-view-month td:first-child { width: 130px; position: sticky; left: 0; }
@@ -245,7 +231,7 @@
                     <div style="font-size:11px; display:flex; gap:10px; align-items:center;">
                         <div style="display:flex; gap:3px;">
                             <button id="chart-period-w" style="padding:2px 6px; font-size:11px;">Týden</button>
-                            <button id="chart-period-m" class="active" style="padding:2px 6px; font-size:11px;">Měsíc</button>
+                            <button id="chart-period-m" style="padding:2px 6px; font-size:11px;">Měsíc</button>
                             <button id="chart-period-y" style="padding:2px 6px; font-size:11px;">Rok</button>
                         </div>
                     </div>
@@ -256,6 +242,7 @@
             <div class="panel" style="width: 260px;" id="sport-panel">
                 <h3 style="margin-top:0; font-weight:400; font-size:15px;">Sporty: <span id="selected-day-label" style="color:var(--primary);">...</span></h3>
                 <div id="sport-selectors-container" class="sport-checkbox-group"></div>
+                <button id="btn-manage-sports" style="width: 100%; font-size: 11px; background: #252525; border-color: #444; padding: 4px;">🛠️ Upravit sporty</button>
             </div>
 
             <div class="panel" style="width: 220px;">
@@ -337,7 +324,7 @@
         </div>
     </div></div>
 
-    <div id="big-stats-modal" class="modal"><div class="modal-content" style="width:550px;">
+    <div id="big-stats-modal" class="modal"><div class="modal-content" style="width:580px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
             <h2 style="margin:0;">Centrum Statistik & Analýzy</h2>
             <select id="stats-period" style="padding:5px; background:#121212; color:white; border:1px solid var(--border-color);">
@@ -347,7 +334,7 @@
                 <option value="lifetime">Celá doba (Lifetime)</option>
             </select>
         </div>
-        <div id="stats-content-area"></div>
+        <div id="stats-content-area" style="max-height:65vh; overflow-y:auto; padding-right:5px;"></div>
         <div style="text-align:right; margin-top:20px;"><button onclick="closeModal('big-stats-modal')">Zavřít</button></div>
     </div></div>
 
@@ -356,15 +343,27 @@
             <h2 style="margin:0;">Přehled celého roku</h2>
             <select id="year-overview-select" style="padding:6px 12px; background:#121212; color:white; border:1px solid var(--border-color); border-radius:6px; font-size:14px;"></select>
         </div>
-        <div id="year-tables-container" style="display:grid; grid-template-columns:1fr; gap:15px; max-height:70vh; overflow-y:auto;"></div>
+        <div id="year-tables-container" style="display:grid; grid-template-columns: 1fr; width:100%; gap:20px; max-height:75vh; overflow-y:auto;"></div>
         <div style="text-align:right; margin-top:20px;"><button onclick="closeModal('year-modal')">Zavřít</button></div>
+    </div></div>
+
+    <div id="sports-management-modal" class="modal"><div class="modal-content" style="width:400px;">
+        <h3 style="margin-top:0;">Správa seznamu sportů</h3>
+        <div style="display:flex; gap:6px; margin-bottom:15px;">
+            <input type="text" id="new-sport-name-input" placeholder="Nový sport (např. Basketbal)" style="flex:1; padding:8px; background:#121212; color:white; border:1px solid var(--border-color); border-radius:4px;">
+            <button id="btn-add-new-sport" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat</button>
+        </div>
+        <div id="sports-management-list" style="max-height:40vh; overflow-y:auto; margin-bottom:15px;"></div>
+        <div style="text-align:right; border-top:1px solid var(--border-color); padding-top:10px;">
+            <button onclick="closeModal('sports-management-modal')">Zavřít</button>
+        </div>
     </div></div>
 
     <div id="settings-modal" class="modal"><div class="modal-content" style="width:580px;">
         <h3 style="margin-top:0;" id="settings-title">Správa řádků</h3>
         
         <div id="settings-main-view">
-            <div id="modal-activity-list" style="max-height:280px; overflow-y:auto; margin-bottom:15px;"></div>
+            <div id="modal-activity-list" style="max-height:240px; overflow-y:auto; margin-bottom:15px;"></div>
             
             <hr style="border:0; border-top:1px solid var(--border-color); margin:15px 0;">
             <h4>Vytvořit nový řádek</h4>
@@ -373,6 +372,7 @@
                 <select id="new-act-type" style="padding:8px; background:#121212; color:white; border:1px solid var(--border-color); border-radius:4px;">
                     <option value="checkbox">Zaškrtávací (Červená / Zelená)</option>
                     <option value="optional-checkbox">Volitelný (Žlutá / Zelená)</option>
+                    <option value="triple">Třístavový (Žlutá / Zelená / Červená)</option>
                     <option value="number">Číselné rozmezí</option>
                 </select>
             </div>
@@ -380,11 +380,16 @@
                 Zelená barva od <input type="number" id="new-act-min" value="7" style="width:50px; background:#222; color:white; border:1px solid #444;"> do <input type="number" id="new-act-max" value="10" style="width:50px; background:#222; color:white; border:1px solid #444;">
             </div>
 
-            <p style="margin:5px 0 12px 0; font-size:12px; color:#aaa;">Odkdy položku do tabulky nasadit?</p>
-            <div class="radio-box-group" id="add-scope-group">
-                <div class="radio-box-option selected" onclick="selectRadioBox('add-scope', this, 'all')"><input type="radio" name="add-scope" value="all" checked>Všude v historii</div>
-                <div class="radio-box-option" onclick="selectRadioBox('add-scope', this, 'yesterday')"><input type="radio" name="add-scope" value="yesterday">Od včerejška</div>
-                <div class="radio-box-option" onclick="selectRadioBox('add-scope', this, 'today')"><input type="radio" name="add-scope" value="today">Od dneška navždy</div>
+            <p style="margin:5px 0 6px 0; font-size:12px; color:#aaa;">Časové rozmezí nasazení položky v tabulce:</p>
+            <div style="display:flex; gap:10px; background:#121212; padding:10px; border-radius:4px; border:1px solid var(--border-color); margin-bottom:15px;">
+                <div style="flex:1;">
+                    <label style="font-size:11px; color:#888; display:block; margin-bottom:2px;">Aktivní od:</label>
+                    <input type="date" id="new-act-start-date" style="width:100%; box-sizing:border-box; background:#222; color:white; border:1px solid #444; padding:4px; border-radius:3px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:11px; color:#888; display:block; margin-bottom:2px;">Aktivní do (volitelné):</label>
+                    <input type="date" id="new-act-end-date" style="width:100%; box-sizing:border-box; background:#222; color:white; border:1px solid #444; padding:4px; border-radius:3px;">
+                </div>
             </div>
 
             <div style="text-align:right; margin-top:15px;">
@@ -404,12 +409,26 @@
                 <select id="edit-act-type" style="width:100%; padding:8px; background:#121212; color:white; border:1px solid var(--border-color); border-radius:4px;">
                     <option value="checkbox">Zaškrtávací (Červená / Zelená)</option>
                     <option value="optional-checkbox">Volitelný úkol (Žlutá / Zelená)</option>
+                    <option value="triple">Třístavový (Žlutá / Zelená / Červená)</option>
                     <option value="number">Číselné rozmezí</option>
                 </select>
             </div>
-            <div id="edit-limit-group" style="display:none; margin-bottom:15px; background:#121212; padding:10px; border-radius:4px;">
+            <div id="edit-limit-group" style="display:none; margin-bottom:12px; background:#121212; padding:10px; border-radius:4px;">
                 Zelená barva od <input type="number" id="edit-act-min" style="width:50px; background:#222; color:white; border:1px solid #444;"> do <input type="number" id="edit-act-max" style="width:50px; background:#222; color:white; border:1px solid #444;">
             </div>
+            
+            <p style="margin:5px 0 4px 0; font-size:12px; color:#aaa;">Časové rozmezí platnosti:</p>
+            <div style="display:flex; gap:10px; background:#121212; padding:10px; border-radius:4px; border:1px solid var(--border-color); margin-bottom:15px;">
+                <div style="flex:1;">
+                    <label style="font-size:11px; color:#888; display:block; margin-bottom:2px;">Aktivní od:</label>
+                    <input type="date" id="edit-act-start-date" style="width:100%; box-sizing:border-box; background:#222; color:white; border:1px solid #444; padding:4px; border-radius:3px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:11px; color:#888; display:block; margin-bottom:2px;">Aktivní do:</label>
+                    <input type="date" id="edit-act-end-date" style="width:100%; box-sizing:border-box; background:#222; color:white; border:1px solid #444; padding:4px; border-radius:3px;">
+                </div>
+            </div>
+
             <div style="text-align:right; display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                 <button onclick="backToSettingsMain()" style="padding:7px 15px;">Zpět</button>
                 <button id="btn-confirm-edit-act" style="background:var(--success-text); color:white; border-color:var(--success-text); padding:7px 15px; font-weight:bold;">Uložit změny</button>
@@ -429,10 +448,6 @@
                     <strong>Ukončit k dnešku a nechat historii</strong><br>
                     <span style="color:#888; font-size:11px;">Záznamy z minulosti zůstanou bezpečně uloženy, ale od zítřka úkol úplně zmizí z tabulky.</span>
                 </button>
-                <button class="delete-option-btn" onclick="executeChytréSmazani('month')">
-                    <strong>Ponechat jen poslední měsíc</strong><br>
-                    <span style="color:#888; font-size:11px;">Zanechá v tabulce záznamy za posledních 30 dní, starší historii promaže a od zítřka se skryje.</span>
-                </button>
             </div>
             <div style="text-align:right; margin-top:20px;">
                 <button onclick="backToSettingsMain()">Zrušit</button>
@@ -448,17 +463,16 @@
         let currentMonth = today.getMonth();
         let selectedDay = today.getDate();
         
-        // ZJIŠTĚNÍ ZAŘÍZENÍ: Mobilní zařízení začnou automaticky v Týdnu, PC v Měsíci
+        // CHYTRÉ NAČTENÍ NEBO ZJIŠTĚNÍ ZAŘÍZENÍ (Ukládá se stav)
         const isMobileDevice = window.innerWidth <= 768;
-        let currentView = isMobileDevice ? 'week' : 'month';
+        let currentView = localStorage.getItem('tracker_current_view') || (isMobileDevice ? 'week' : 'month');
+        let graphPeriod = localStorage.getItem('tracker_graph_period') || 'month';
         
-        let graphPeriod = 'month';
         let yearOverviewSelectedYear = today.getFullYear();
-
         let weekStartDay = Math.max(1, today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
 
         const monthNames = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
-        const sportsList = ["Běh", "Gym", "Fotbal", "Kolo", "Plavání", "Tenis", "Procházka", "Ostatní"];
+        let sportsList = ["Běh", "Gym", "Fotbal", "Kolo", "Plavání", "Tenis", "Procházka", "Ostatní"];
 
         let activities = [
             { id: 'sleep', name: 'Spánek (hodiny)', type: 'number', min: 6, max: 10, start: "", end: "" },
@@ -501,8 +515,8 @@
                     activities = cloudData.activities || activities;
                     goals = cloudData.goals || {};
                     todoList = cloudData.todoList || [];
+                    sportsList = cloudData.sportsList || sportsList;
                     
-                    activities = activities.filter(a => a.id !== 'screen_time');
                     activities.forEach(a => {
                         if (a.start === undefined) a.start = "";
                         if (a.end === undefined) a.end = "";
@@ -514,12 +528,17 @@
                 document.getElementById('loading-overlay').style.display = 'none';
                 buildCalendarSelects();
                 
-                // Nastavení aktivního tlačítka podle detekovaného zařízení
                 if (currentView === 'week') {
                     toggleActiveViewBtn(document.getElementById('btn-view-week'));
                 } else {
                     toggleActiveViewBtn(document.getElementById('btn-view-month'));
                 }
+
+                // Aktivace správného tlačítka spánku z paměti
+                document.getElementById('chart-period-w').classList.remove('active');
+                document.getElementById('chart-period-m').classList.remove('active');
+                document.getElementById('chart-period-y').classList.remove('active');
+                document.getElementById(`chart-period-${graphPeriod.substring(0,1)}`).classList.add('active');
                 
                 renderDashboard();
                 updateYearProgressBar();
@@ -528,9 +547,7 @@
 
         function vycistitZatoulaneUkoly() {
             let zmeny = false;
-            let puvodniDelka = activities.length;
             activities = activities.filter(a => a.name && a.name.trim() !== "." && a.name.trim() !== "");
-            if (activities.length !== puvodniDelka) zmeny = true;
 
             for (let y in db) {
                 for (let m in db[y]) {
@@ -546,7 +563,7 @@
         }
 
         function saveToCloud() {
-            window.dbSet(window.dbRef("cloud_tracker_data"), { db, diary, activities, goals, todoList });
+            window.dbSet(window.dbRef("cloud_tracker_data"), { db, diary, activities, goals, todoList, sportsList });
         }
 
         function getDaysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
@@ -556,7 +573,7 @@
             if (!db[year][month]) {
                 db[year][month] = { sports: {} };
                 activities.forEach(act => {
-                    db[year][month][act.id] = Array(32).fill(act.type.includes('checkbox') ? false : 0);
+                    db[year][month][act.id] = Array(32).fill(act.type.includes('number') ? 0 : (act.type === 'triple' ? 'yellow' : false));
                 });
             }
         }
@@ -564,10 +581,7 @@
         function init() {
             setupEventListeners();
             document.getElementById('diary-input-date').value = today.toISOString().split('T')[0];
-            
-            document.getElementById('stats-period').onchange = () => {
-                calculateBigStats();
-            };
+            document.getElementById('stats-period').onchange = () => calculateBigStats();
         }
 
         function buildCalendarSelects() {
@@ -596,7 +610,6 @@
                 document.body.className = 'body-view-week';
                 document.getElementById('btn-prev-week').style.display = 'inline-block';
                 document.getElementById('btn-next-week').style.display = 'inline-block';
-                
                 let targetDate = new Date(currentYear, currentMonth, weekStartDay);
                 document.getElementById('week-number-label').innerText = `(Týden ${getWeekNumber(targetDate)})`;
             } else {
@@ -654,7 +667,7 @@
                     }
 
                     if(!db[currentYear][currentMonth][act.id]) {
-                        db[currentYear][currentMonth][act.id] = Array(32).fill(act.type.includes('checkbox') ? false : 0);
+                        db[currentYear][currentMonth][act.id] = Array(32).fill(act.type.includes('number') ? 0 : (act.type === 'triple' ? 'yellow' : false));
                     }
                     let val = db[currentYear][currentMonth][act.id][d];
                     
@@ -664,6 +677,14 @@
                     } else if (act.type === 'optional-checkbox') {
                         let isColor = val ? 'status-green' : 'status-yellow';
                         bodyHTML += `<td class="cell-clickable ${isColor} ${colClass}" onclick="toggleCheckbox('${act.id}', ${d})">${val ? '✓' : '•'}</td>`;
+                    } else if (act.type === 'triple') {
+                        let isColor = 'status-yellow';
+                        if (val === 'green') isColor = 'status-green';
+                        if (val === 'red') isColor = 'status-red';
+                        let displayMark = '•';
+                        if (val === 'green') displayMark = '✓';
+                        if (val === 'red') displayMark = '✕';
+                        bodyHTML += `<td class="cell-clickable ${isColor} ${colClass}" onclick="cycleTripleState('${act.id}', ${d})">${displayMark}</td>`;
                     } else {
                         let isGreen = (val >= act.min && val <= act.max) ? 'status-green' : 'status-red';
                         bodyHTML += `<td class="${isGreen} ${colClass}">
@@ -681,6 +702,15 @@
         window.toggleCheckbox = function(id, d) { 
             db[currentYear][currentMonth][id][d] = !db[currentYear][currentMonth][id][d]; 
             saveToCloud(); renderTable(); 
+        }
+
+        window.cycleTripleState = function(id, d) {
+            let curr = db[currentYear][currentMonth][id][d] || 'yellow';
+            let nextState = 'green';
+            if (curr === 'green') nextState = 'red';
+            else if (curr === 'red') nextState = 'yellow';
+            db[currentYear][currentMonth][id][d] = nextState;
+            saveToCloud(); renderTable();
         }
         
         window.updateNumber = function(input, id, d) { 
@@ -703,9 +733,7 @@
                     labels.push(`${d}.`); 
                     let val = (db[currentYear] && db[currentYear][currentMonth] && db[currentYear][currentMonth]['sleep']) ? db[currentYear][currentMonth]['sleep'][d] : 0;
                     dataPoints.push(val);
-                    
-                    let isPastOrToday = new Date(currentYear, currentMonth, d) <= today;
-                    if (val > 0 && isPastOrToday) { validSleepValuesForAvg.push(val); }
+                    if (val > 0 && new Date(currentYear, currentMonth, d) <= today) validSleepValuesForAvg.push(val);
                 }
             } else if (graphPeriod === 'month') {
                 let total = getDaysInMonth(currentYear, currentMonth);
@@ -713,30 +741,22 @@
                     labels.push(`${d}.`); 
                     let val = (db[currentYear] && db[currentYear][currentMonth] && db[currentYear][currentMonth]['sleep']) ? db[currentYear][currentMonth]['sleep'][d] : 0;
                     dataPoints.push(val);
-                    
-                    let isPastOrToday = new Date(currentYear, currentMonth, d) <= today;
-                    if (val > 0 && isPastOrToday) { validSleepValuesForAvg.push(val); }
+                    if (val > 0 && new Date(currentYear, currentMonth, d) <= today) validSleepValuesForAvg.push(val);
                 }
             } else if (graphPeriod === 'year') {
                 for(let m=0; m<12; m++) {
                     checkAndInitData(currentYear, m);
                     let tDays = getDaysInMonth(currentYear, m);
-                    let monthValidSums = 0;
-                    let monthValidDaysCount = 0;
-                    
+                    let monthValidSums = 0, monthValidDaysCount = 0;
                     for(let d=1; d<=tDays; d++) {
                         let isPastOrToday = new Date(currentYear, m, d) <= today;
                         let val = db[currentYear][m]['sleep'] ? db[currentYear][m]['sleep'][d] : 0;
-                        if (val > 0 && isPastOrToday) {
-                            monthValidSums += val;
-                            monthValidDaysCount++;
-                        }
+                        if (val > 0 && isPastOrToday) { monthValidSums += val; monthValidDaysCount++; }
                     }
-                    
                     labels.push(monthNames[m].substring(0,3));
                     let mAvg = monthValidDaysCount > 0 ? parseFloat((monthValidSums / monthValidDaysCount).toFixed(1)) : 0;
                     dataPoints.push(mAvg);
-                    if (mAvg > 0) { validSleepValuesForAvg.push(mAvg); }
+                    if (mAvg > 0) validSleepValuesForAvg.push(mAvg);
                 }
             }
 
@@ -791,16 +811,15 @@
                 }
             }
 
+            let colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6b7280', '#a855f7', '#14b8a6', '#f43f5e'];
+            while(colors.length < sportsList.length) colors.push('#' + Math.floor(Math.random()*16777215).toString(16));
+
             if(sportChartInstance) sportChartInstance.destroy();
             sportChartInstance = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: sportsList,
-                    datasets: [{ 
-                        data: counts, 
-                        backgroundColor: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6b7280'], 
-                        borderWidth: 0 
-                    }]
+                    datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
@@ -822,7 +841,6 @@
             const dayOfYear = Math.floor(diff / oneDay) + 1;
             const daysInYear = (today.getFullYear() % 4 === 0) ? 366 : 365;
             const pct = ((dayOfYear / daysInYear) * 100).toFixed(1);
-
             document.getElementById('year-bar').style.width = pct + '%';
             document.getElementById('year-bar-text').innerText = pct + '%';
             document.getElementById('year-progress-date').innerText = `Den ${dayOfYear} z ${daysInYear}`;
@@ -831,7 +849,6 @@
         function renderTodoList() {
             const container = document.getElementById('todo-list-container');
             let html = '';
-            
             todoList.forEach((t, idx) => {
                 html += `<div class="goal-row">
                     <button class="order-btn" onclick="moveTodo(${idx}, -1)">▲</button>
@@ -841,7 +858,7 @@
                     <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
                 </div>`;
             });
-            if(todoList.length === 0) html = '<p style="color:#666; text-align:center;">To-Do list je prázdný. Přidej si první úkol!</p>';
+            if(todoList.length === 0) html = '<p style="color:#666; text-align:center;">To-Do list je prázdný.</p>';
             container.innerHTML = html;
         }
 
@@ -859,7 +876,6 @@
         function renderGoals() {
             const container = document.getElementById('goals-list-container');
             if (!goals[currentYear]) goals[currentYear] = [];
-            
             let html = '';
             goals[currentYear].forEach((g, idx) => {
                 html += `<div class="goal-row fancy-premium">
@@ -888,7 +904,6 @@
         function renderSettingsList() {
             const container = document.getElementById('modal-activity-list');
             container.innerHTML = '';
-            
             activities.forEach((act, realIdx) => {
                 let isArchived = (act.end && act.end <= today.toISOString().split('T')[0]);
                 if (isArchived) return; 
@@ -897,7 +912,7 @@
                 item.className = 'drag-item';
                 item.dataset.index = realIdx;
                 
-                let typeBadge = act.type === 'optional-checkbox' ? 'žlutý' : (act.type === 'checkbox' ? 'zaškrtávací' : 'číslo');
+                let typeBadge = act.type === 'optional-checkbox' ? 'žlutý' : (act.type === 'checkbox' ? 'zaškrtávací' : (act.type==='triple' ? '3-stav' : 'číslo'));
                 
                 item.innerHTML = `
                     <div style="display:flex; align-items:center; gap:6px;">
@@ -918,21 +933,8 @@
         window.moveActivity = function(index, direction) {
             let newIndex = index + direction;
             if (newIndex < 0 || newIndex >= activities.length) return;
-            
-            let temp = activities[index];
-            activities[index] = activities[newIndex];
-            activities[newIndex] = temp;
-            
-            saveToCloud();
-            renderSettingsList();
-            renderTable();
-        }
-
-        window.selectRadioBox = function(name, element, val) {
-            const options = element.parentElement.querySelectorAll('.radio-box-option');
-            options.forEach(opt => opt.classList.remove('selected'));
-            element.classList.add('selected');
-            element.querySelector('input').checked = true;
+            let temp = activities[index]; activities[index] = activities[newIndex]; activities[newIndex] = temp;
+            saveToCloud(); renderSettingsList(); renderTable();
         }
 
         window.openEditActivityView = function(id) {
@@ -943,10 +945,11 @@
             document.getElementById('settings-main-view').style.display = 'none';
             document.getElementById('settings-edit-view').style.display = 'block';
             document.getElementById('settings-title').innerText = 'Úprava úkolu';
-
             document.getElementById('edit-act-original-name').innerText = act.name;
             document.getElementById('edit-act-name').value = act.name;
             document.getElementById('edit-act-type').value = act.type;
+            document.getElementById('edit-act-start-date').value = act.start || "";
+            document.getElementById('edit-act-end-date').value = act.end || "";
             
             if(act.type === 'number') {
                 document.getElementById('edit-limit-group').style.display = 'block';
@@ -961,7 +964,6 @@
             activeDeletingId = id;
             let act = activities.find(a => a.id === id);
             if(!act) return;
-
             document.getElementById('settings-main-view').style.display = 'none';
             document.getElementById('settings-delete-view').style.display = 'block';
             document.getElementById('settings-title').innerText = 'Odstranění úkolu';
@@ -973,34 +975,60 @@
             document.getElementById('settings-delete-view').style.display = 'none';
             document.getElementById('settings-main-view').style.display = 'block';
             document.getElementById('settings-title').innerText = 'Správa řádků';
-            activeEditingId = null;
-            activeDeletingId = null;
+            activeEditingId = null; activeDeletingId = null;
             renderSettingsList();
         }
 
         window.executeChytréSmazani = function(mode) {
             let idx = activities.findIndex(a => a.id === activeDeletingId);
             if (idx === -1) return;
-
-            let todayStr = today.toISOString().split('T')[0];
-
             if (mode === 'all') {
                 activities.splice(idx, 1);
             } else if (mode === 'archive') {
-                activities[idx].end = todayStr;
-            } else if (mode === 'month') {
-                let past30Days = new Date();
-                past30Days.setDate(past30Days.getDate() - 30);
-                activities[idx].start = past30Days.toISOString().split('T')[0];
-                activities[idx].end = todayStr;
+                activities[idx].end = today.toISOString().split('T')[0];
             }
+            saveToCloud(); renderDashboard(); backToSettingsMain();
+        }
 
+        function renderSportsManagementList() {
+            const container = document.getElementById('sports-management-list');
+            let html = '';
+            sportsList.forEach((sport, idx) => {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#121212; padding:6px 10px; margin-bottom:4px; border-radius:4px; border:1px solid var(--border-color);">
+                    <span>${sport}</span>
+                    <button onclick="deleteSportFromList(${idx})" style="background:none; border:none; color:var(--danger-text); font-weight:bold; cursor:pointer;">✕</button>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.deleteSportFromList = function(idx) {
+            sportsList.splice(idx, 1);
             saveToCloud();
-            renderDashboard();
-            backToSettingsMain();
+            renderSportsManagementList();
+            renderSportPanel();
+            renderSportPieChart();
         }
 
         function setupEventListeners() {
+            document.getElementById('btn-manage-sports').onclick = () => {
+                renderSportsManagementList();
+                document.getElementById('sports-management-modal').style.display = 'flex';
+            };
+
+            document.getElementById('btn-add-new-sport').onclick = () => {
+                const inp = document.getElementById('new-sport-name-input');
+                const name = inp.value.trim();
+                if (name && !sportsList.includes(name)) {
+                    sportsList.push(name);
+                    saveToCloud();
+                    inp.value = '';
+                    renderSportsManagementList();
+                    renderSportPanel();
+                    renderSportPieChart();
+                }
+            };
+
             document.getElementById('btn-open-calendar').onclick = () => document.getElementById('calendar-modal').style.display = 'flex';
             document.getElementById('btn-open-settings').onclick = () => { document.getElementById('settings-modal').style.display = 'flex'; backToSettingsMain(); };
             document.getElementById('btn-open-year').onclick = () => { document.getElementById('year-modal').style.display = 'flex'; renderYearView(); };
@@ -1025,8 +1053,7 @@
                 if(currentView === 'week') {
                     weekStartDay -= 7;
                     if(weekStartDay < 1) {
-                        currentMonth--;
-                        if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+                        currentMonth--; if(currentMonth < 0) { currentMonth = 11; currentYear--; }
                         weekStartDay = getDaysInMonth(currentYear, currentMonth) - 6;
                     }
                 } else {
@@ -1040,8 +1067,7 @@
                     let totalDays = getDaysInMonth(currentYear, currentMonth);
                     weekStartDay += 7;
                     if(weekStartDay > totalDays) {
-                        currentMonth++;
-                        if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+                        currentMonth++; if(currentMonth > 11) { currentMonth = 0; currentYear++; }
                         weekStartDay = 1;
                     }
                 } else {
@@ -1064,12 +1090,12 @@
                 document.getElementById('diary-text').value = ''; renderDiaryLogs();
             };
 
-            document.getElementById('chart-period-w').onclick = (e) => { graphPeriod = 'week'; selectSleepBtn(e.target); renderMainChart(); };
-            document.getElementById('chart-period-m').onclick = (e) => { graphPeriod = 'month'; selectSleepBtn(e.target); renderMainChart(); };
-            document.getElementById('chart-period-y').onclick = (e) => { graphPeriod = 'year'; selectSleepBtn(e.target); renderMainChart(); };
+            document.getElementById('chart-period-w').onclick = (e) => { graphPeriod = 'week'; localStorage.setItem('tracker_graph_period', 'week'); selectSleepBtn(e.target); renderMainChart(); };
+            document.getElementById('chart-period-m').onclick = (e) => { graphPeriod = 'month'; localStorage.setItem('tracker_graph_period', 'month'); selectSleepBtn(e.target); renderMainChart(); };
+            document.getElementById('chart-period-y').onclick = (e) => { graphPeriod = 'year'; localStorage.setItem('tracker_graph_period', 'year'); selectSleepBtn(e.target); renderMainChart(); };
 
-            document.getElementById('btn-view-week').onclick = (e) => { currentView = 'week'; weekStartDay = Math.max(1, selectedDay - 3); toggleActiveViewBtn(e.target); renderDashboard(); };
-            document.getElementById('btn-view-month').onclick = (e) => { currentView = 'month'; toggleActiveViewBtn(e.target); renderDashboard(); };
+            document.getElementById('btn-view-week').onclick = (e) => { currentView = 'week'; localStorage.setItem('tracker_current_view', 'week'); weekStartDay = Math.max(1, selectedDay - 3); toggleActiveViewBtn(e.target); renderDashboard(); };
+            document.getElementById('btn-view-month').onclick = (e) => { currentView = 'month'; localStorage.setItem('tracker_current_view', 'month'); toggleActiveViewBtn(e.target); renderDashboard(); };
 
             document.getElementById('new-act-type').onchange = (e) => { document.getElementById('modal-limit-group').style.display = e.target.value === 'number' ? 'block' : 'none'; };
             document.getElementById('edit-act-type').onchange = (e) => { document.getElementById('edit-limit-group').style.display = e.target.value === 'number' ? 'block' : 'none'; };
@@ -1080,58 +1106,46 @@
 
                 let newName = document.getElementById('edit-act-name').value.trim();
                 let newType = document.getElementById('edit-act-type').value;
-
                 if(!newName) return;
 
                 act.name = newName;
                 act.type = newType;
+                act.start = document.getElementById('edit-act-start-date').value;
+                act.end = document.getElementById('edit-act-end-date').value;
 
                 if (newType === 'number') {
                     act.min = parseFloat(document.getElementById('edit-act-min').value) || 0;
                     act.max = parseFloat(document.getElementById('edit-act-max').value) || 0;
                 } else {
-                    delete act.min;
-                    delete act.max;
+                    delete act.min; delete act.max;
                 }
 
-                saveToCloud();
-                renderDashboard();
-                backToSettingsMain();
+                saveToCloud(); renderDashboard(); backToSettingsMain();
             };
 
             document.getElementById('btn-save-new-act').onclick = () => {
                 const name = document.getElementById('new-act-name').value.trim();
                 const type = document.getElementById('new-act-type').value;
-                const scope = document.querySelector('input[name="add-scope"]:checked').value;
+                const startStr = document.getElementById('new-act-start-date').value;
+                const endStr = document.getElementById('new-act-end-date').value;
 
                 if(!name) return;
-                
                 const id = 'custom_' + Date.now();
-                let startStr = ""; 
-                let todayStr = today.toISOString().split('T')[0];
 
-                if (scope === 'today') {
-                    startStr = todayStr;
-                } else if (scope === 'yesterday') {
-                    let yst = new Date();
-                    yst.setDate(yst.getDate() - 1);
-                    startStr = yst.toISOString().split('T')[0];
-                }
-
-                let newAct = { id, name, type, start: startStr, end: "" };
-                
+                let newAct = { id, name, type, start: startStr, end: endStr };
                 if(type === 'number') {
                     newAct.min = parseFloat(document.getElementById('new-act-min').value) || 0;
                     newAct.max = parseFloat(document.getElementById('new-act-max').value) || 24;
                 }
 
                 activities.push(newAct);
-                db[currentYear][currentMonth][id] = Array(32).fill(type.includes('checkbox') ? false : 0);
+                db[currentYear][currentMonth][id] = Array(32).fill(type.includes('number') ? 0 : (type==='triple' ? 'yellow' : false));
                 
                 saveToCloud(); 
-                document.getElementById('new-act-name').value = ''; 
-                renderDashboard(); 
-                renderSettingsList();
+                document.getElementById('new-act-name').value = '';
+                document.getElementById('new-act-start-date').value = '';
+                document.getElementById('new-act-end-date').value = '';
+                renderDashboard(); renderSettingsList();
             };
         }
 
@@ -1188,68 +1202,58 @@
 
             let counts = {}; activities.forEach(a => counts[a.id] = 0);
             let sportCounts = {}; sportsList.forEach(s => sportCounts[s] = 0);
-            let ratingSum = 0, ratingDays = 0;
 
             daysToCheck.forEach(item => {
                 if(!db[item.y] || !db[item.y][item.m]) return;
                 
                 activities.forEach(act => {
                     if (isActivityVisibleOnDate(act, item.y, item.m, item.d)) {
-                        if (db[item.y][item.m][act.id] && db[item.y][item.m][act.id][item.d]) {
-                            counts[act.id]++;
-                        }
+                        let val = db[item.y][item.m][act.id] ? db[item.y][item.m][act.id][item.d] : false;
+                        if (act.type === 'triple' && (val === 'green' || val === 'red')) counts[act.id]++;
+                        else if (val && act.type !== 'number' && act.type !== 'triple') counts[act.id]++;
                     }
                 });
 
-                let rVal = db[item.y][item.m]['rating'] ? db[item.y][item.m]['rating'][item.d] : 0;
-                if(rVal > 0) { ratingSum += rVal; ratingDays++; }
-                if (db[item.y][item.m].sports && db[item.y][item.m].sports[item.d]) { sportsList.forEach(s => { if(db[item.y][item.m].sports[item.d][s]) sportCounts[s]++; }); }
+                if (db[item.y][item.m].sports && db[item.y][item.m].sports[item.d]) { 
+                    sportsList.forEach(s => { if(db[item.y][item.m].sports[item.d][s]) sportCounts[s]++; }); 
+                }
             });
 
             let streaksHTML = '<h4>Série dní (Aktuální stav)</h4><ul>';
-            
             let timeline = [];
             let scanYear = 2026;
             let currentScanningDate = new Date(scanYear, 0, 1);
             let todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
             while (currentScanningDate <= todayMidnight) {
-                timeline.push({
-                    y: currentScanningDate.getFullYear(),
-                    m: currentScanningDate.getMonth(),
-                    d: currentScanningDate.getDate()
-                });
+                timeline.push({ y: currentScanningDate.getFullYear(), m: currentScanningDate.getMonth(), d: currentScanningDate.getDate() });
                 currentScanningDate.setDate(currentScanningDate.getDate() + 1);
             }
 
             activities.forEach(act => {
-                if (act.type.includes('checkbox')) {
-                    let currentStreak = 0;
-                    let maxStreak = 0;
-
+                if (act.type.includes('checkbox') || act.type === 'triple') {
+                    let currentStreak = 0, maxStreak = 0;
                     timeline.forEach(item => {
                         if (isActivityVisibleOnDate(act, item.y, item.m, item.d)) {
                             let status = (db[item.y] && db[item.y][item.m] && db[item.y][item.m][act.id]) ? db[item.y][item.m][act.id][item.d] : false;
-                            if (status) {
-                                currentStreak++;
-                                if (currentStreak > maxStreak) maxStreak = currentStreak;
-                            } else {
-                                currentStreak = 0;
-                            }
+                            let isDone = (act.type === 'triple') ? (status === 'green') : status;
+                            if (isDone) { currentStreak++; if (currentStreak > maxStreak) maxStreak = currentStreak; } 
+                            else { currentStreak = 0; }
                         }
                     });
 
                     let actualCurrentStreak = 0;
                     let idx = timeline.length - 1; 
-                    
                     if (idx >= 0) {
                         let tToday = timeline[idx];
-                        let todayDone = (db[tToday.y] && db[tToday.y][tToday.m] && db[tToday.y][tToday.m][act.id]) ? db[tToday.y][tToday.m][act.id][tToday.d] : false;
+                        let todayStatus = (db[tToday.y] && db[tToday.y][tToday.m] && db[tToday.y][tToday.m][act.id]) ? db[tToday.y][tToday.m][act.id][tToday.d] : false;
+                        let todayDone = (act.type === 'triple') ? (todayStatus === 'green') : todayStatus;
                         
                         let yesterdayDone = false;
                         if (idx > 0) {
                             let tYest = timeline[idx - 1];
-                            yesterdayDone = (db[tYest.y] && db[tYest.y][tYest.m] && db[tYest.y][tYest.m][act.id]) ? db[tYest.y][tYest.m][act.id][tYest.d] : false;
+                            let yestStatus = (db[tYest.y] && db[tYest.y][tYest.m] && db[tYest.y][tYest.m][act.id]) ? db[tYest.y][tYest.m][act.id][tYest.d] : false;
+                            yesterdayDone = (act.type === 'triple') ? (yestStatus === 'green') : yestStatus;
                         }
 
                         if (todayDone || yesterdayDone) {
@@ -1257,12 +1261,9 @@
                             while (startIdx >= 0) {
                                 let tItem = timeline[startIdx];
                                 if (isActivityVisibleOnDate(act, tItem.y, tItem.m, tItem.d)) {
-                                    let isDone = (db[tItem.y] && db[tItem.y][tItem.m] && db[tItem.y][tItem.m][act.id]) ? db[tItem.y][tItem.m][act.id][tItem.d] : false;
-                                    if (isDone) {
-                                        actualCurrentStreak++;
-                                    } else {
-                                        break; 
-                                    }
+                                    let sStatus = (db[tItem.y] && db[tItem.y][tItem.m] && db[tItem.y][tItem.m][act.id]) ? db[tItem.y][tItem.m][act.id][tItem.d] : false;
+                                    let isDone = (act.type === 'triple') ? (sStatus === 'green') : sStatus;
+                                    if (isDone) actualCurrentStreak++; else break;
                                 }
                                 startIdx--;
                             }
@@ -1270,20 +1271,30 @@
                     }
 
                     let everActive = daysToCheck.some(i => isActivityVisibleOnDate(act, i.y, i.m, i.d));
-                    if (everActive) {
-                        streaksHTML += `<li>${act.name}: Aktuální <strong>${actualCurrentStreak} dní</strong> | Max: <strong>${maxStreak} dní</strong></li>`;
-                    }
+                    if (everActive) streaksHTML += `<li>${act.name}: Aktuální <strong>${actualCurrentStreak} dní</strong> | Max: <strong>${maxStreak} dní</strong></li>`;
                 }
             });
             streaksHTML += '</ul>';
 
-            container.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                <div><h4>Celkové počty splnění</h4><ul>` + activities.map(a => {
-                    let everActive = daysToCheck.some(i => isActivityVisibleOnDate(a, i.y, i.m, i.d));
-                    return (!a.type.includes('checkbox') || !everActive) ? '' : `<li>${a.name}: <strong>${counts[a.id]}x</strong></li>`;
-                }).join('') + `</ul></div>
-                <div>${streaksHTML}</div>
-            </div>`;
+            // STATISTIKY SPORTŮ DO OKNA STATISTIK
+            let sportsHTML = '<h4>Statistika sportovních aktivit</h4><ul>';
+            sportsList.forEach(sport => {
+                sportsHTML += `<li>${sport}: <strong>${sportCounts[sport]}x</strong></li>`;
+            });
+            sportsHTML += '</ul>';
+
+            container.innerHTML = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom: 15px;">
+                    <div><h4>Celkové počty splnění úkolů</h4><ul>` + activities.map(a => {
+                        let everActive = daysToCheck.some(i => isActivityVisibleOnDate(a, i.y, i.m, i.d));
+                        return (!everActive || a.type === 'number') ? '' : `<li>${a.name}: <strong>${counts[a.id]}x</strong></li>`;
+                    }).join('') + `</ul></div>
+                    <div>${streaksHTML}</div>
+                </div>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    ${sportsHTML}
+                </div>
+            `;
         }
 
         function renderYearView() {
@@ -1300,12 +1311,12 @@
 
                 if (monthActs.length === 0) continue;
 
-                html += `<div class="panel"><h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4><div style="overflow-x:auto;"><table style="font-size:9px; table-layout:auto; width:auto;"><tr><th>Aktivita</th>`;
+                html += `<div class="panel" style="width:100%; box-sizing:border-box;"><h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4><div style="width:100%; overflow-x:auto;"><table style="font-size:9px; table-layout:auto; width:100%;"><tr><th>Aktivita</th>`;
                 for(let d=1; d<=days; d++) html += `<th>${d}</th>`;
                 html += `</tr>`;
                 
                 monthActs.forEach(act => {
-                    html += `<tr><td style="width:110px; text-align:left; padding-left:4px;">${act.name}</td>`;
+                    html += `<tr><td style="width:130px; text-align:left; padding-left:4px;">${act.name}</td>`;
                     for(let d=1; d<=days; d++) {
                         if (!isActivityVisibleOnDate(act, yearOverviewSelectedYear, m, d)) {
                             html += `<td style="background-color:#171717; color:#444;">-</td>`;
@@ -1314,6 +1325,12 @@
                         let val = db[yearOverviewSelectedYear][m][act.id] ? db[yearOverviewSelectedYear][m][act.id][d] : false;
                         if(act.type==='checkbox') html += `<td style="background-color:${val?'var(--success-color)':'var(--danger-color)'}; color:${val?'var(--success-text)':'var(--danger-text)'};">${val?'✓':'•'}</td>`;
                         else if(act.type==='optional-checkbox') html += `<td style="background-color:${val?'var(--success-color)':'var(--warning-color)'}; color:${val?'var(--success-text)':'var(--warning-text)'};">${val?'✓':'•'}</td>`;
+                        else if(act.type==='triple') {
+                            let bg = 'var(--warning-color)', tx = 'var(--warning-text)', m='•';
+                            if(val==='green') { bg='var(--success-color)'; tx='var(--success-text)'; m='✓'; }
+                            if(val==='red') { bg='var(--danger-color)'; tx='var(--danger-text)'; m='✕'; }
+                            html += `<td style="background-color:${bg}; color:${tx};">${m}</td>`;
+                        }
                         else html += `<td>${val||0}</td>`;
                     }
                     html += `</tr>`;
