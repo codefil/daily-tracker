@@ -590,7 +590,6 @@
             { id: 'cold', name: 'Otužení', type: 'checkbox', intervals: [] },
             { id: 'chill', name: 'Chill', type: 'checkbox', intervals: [] },
             { id: 'dots', name: '...', type: 'triple', intervals: [] },
-            { id: 'uplink', name: 'uplink', type: 'checkbox', intervals: [] },
             { id: 'rating', name: 'Hodnocení dne (1-10)', type: 'number', min: 7, max: 10, intervals: [] }
         ];
 
@@ -626,7 +625,7 @@
                     todoList = cloudData.todoList || [];
                     sportsList = cloudData.sportsList || sportsList;
                     
-                    activities = activities.filter(a => a.id !== 'museums');
+                    activities = activities.filter(a => a.id !== 'uplink' && a.id !== 'museums');
 
                     defaultActivities.forEach(defaultAct => {
                         if (!activities.some(a => a.id === defaultAct.id)) {
@@ -670,12 +669,12 @@
 
         function vycistitZatoulaneUkoly() {
             let zmeny = false;
-            activities = activities.filter(a => a.name && a.name.trim() !== "" && a.id !== 'museums');
+            activities = activities.filter(a => a.name && a.name.trim() !== "" && a.id !== 'uplink' && a.id !== 'museums');
 
             for (let y in db) {
                 for (let m in db[y]) {
                     for (let key in db[y][m]) {
-                        if (key === "museums" || key === "" || (key.startsWith('custom_') && !activities.some(a => a.id === key))) {
+                        if (key === "uplink" || key === "museums" || key === "" || (key.startsWith('custom_') && !activities.some(a => a.id === key))) {
                             delete db[y][m][key];
                             zmeny = true;
                         }
@@ -1083,11 +1082,9 @@
                     }
                 });
                 
-                // OPRAVA: Bezpečné nahrazení položek v poli tak, aby se nic neztratilo
                 listArray.length = 0;
                 newArray.forEach(item => listArray.push(item));
                 
-                // Přidání případných položek, které v DOMu chyběly (pojistka proti mizení posledních řádků)
                 originalArrayItems.forEach(origItem => {
                     if (!listArray.includes(origItem)) {
                         listArray.push(origItem);
