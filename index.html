@@ -626,10 +626,8 @@
                     todoList = cloudData.todoList || [];
                     sportsList = cloudData.sportsList || sportsList;
                     
-                    // Odstranění staré položky muzeum, pokud ještě existuje v databázi
                     activities = activities.filter(a => a.id !== 'museums');
 
-                    // Automatické doplnění chybějících výchozích položek (včetně "..." a "uplink")
                     defaultActivities.forEach(defaultAct => {
                         if (!activities.some(a => a.id === defaultAct.id)) {
                             activities.push(JSON.parse(JSON.stringify(defaultAct)));
@@ -701,7 +699,6 @@
                     db[year][month][act.id] = Array(32).fill(act.type.includes('number') ? 0 : (act.type === 'triple' ? 'yellow' : false));
                 });
             } else {
-                // Pojistka pro případ, že v již existujícím měsíci v cloudu chybí nově přidané řádky (např. uplink)
                 activities.forEach(act => {
                     if (!db[year][month][act.id]) {
                         db[year][month][act.id] = Array(32).fill(act.type.includes('number') ? 0 : (act.type === 'triple' ? 'yellow' : false));
@@ -1086,10 +1083,21 @@
                     }
                 });
                 
+                // OPRAVA: Bezpečné nahrazení položek v poli tak, aby se nic neztratilo
                 listArray.length = 0;
-                listArray.push(...newArray);
+                newArray.forEach(item => listArray.push(item));
+                
+                // Přidání případných položek, které v DOMu chyběly (pojistka proti mizení posledních řádků)
+                originalArrayItems.forEach(origItem => {
+                    if (!listArray.includes(origItem)) {
+                        listArray.push(origItem);
+                    }
+                });
+
                 onReorderCallback();
             };
+
+            let originalArrayItems = [...listArray];
 
             const items = container.querySelectorAll('.drag-item, .goal-row');
             items.forEach((item, index) => {
