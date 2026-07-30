@@ -165,7 +165,6 @@
         .sport-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
         .sport-item { background: #0b0f19; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
         
-        /* Drag & Drop Prvky */
         .drag-container { display: flex; flex-direction: column; gap: 8px; }
         .drag-item, .goal-row { 
             display: flex; 
@@ -196,7 +195,6 @@
         .goal-text { flex: 1; background: transparent; border: none; color: white; font-size: 13px; outline: none; font-family: inherit; }
         .goal-done { text-decoration: line-through; color: var(--text-muted); }
 
-        /* Záložky roků pro Cíle */
         .year-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid var(--border-color); }
         .year-tab { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .year-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -209,7 +207,6 @@
         .diary-entry:hover { border-color: var(--primary); transform: translateY(-1px); }
         .diary-date { color: var(--primary); font-weight: 600; margin-bottom: 6px; font-size: 12px; display: flex; justify-content: space-between; }
 
-        /* Jednotné elegantní písmo v deníku */
         #diary-text, .diary-content-text {
             font-family: 'Merriweather', Georgia, serif;
             font-size: 14px;
@@ -394,13 +391,11 @@
             <button id="btn-add-goal" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat cíl</button>
         </div>
         
-        <!-- Roční záložky pro cíle -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div id="goals-year-tabs" class="year-tabs" style="margin-bottom:0; flex:1;"></div>
             <button id="btn-toggle-add-year" style="font-size:11px; padding:5px 10px; margin-left:10px; background:#1c2640;">+ Přidat rok</button>
         </div>
 
-        <!-- Form pro přidání nového roku bez prompt Window -->
         <div id="add-year-form-container" style="display:none; background:#0b0f19; padding:10px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:15px;">
             <div style="display:flex; gap:8px; align-items:center;">
                 <input type="number" id="new-goals-year-input" placeholder="Zadej rok (např. 2027)" style="flex:1; padding:6px 10px; background:#151d30; border:1px solid var(--border-color); color:white; border-radius:6px;">
@@ -583,7 +578,7 @@
         const monthNames = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
         let sportsList = ["Běh", "Gym", "Fotbal", "Kolo", "Plavání", "Tenis", "Procházka", "Ostatní"];
 
-        let activities = [
+        let defaultActivities = [
             { id: 'sleep', name: 'Spánek (hodiny)', type: 'number', min: 6, max: 10, intervals: [] },
             { id: 'learn', name: 'Učení', type: 'checkbox', intervals: [] },
             { id: 'home', name: 'Práce / Pomoc doma', type: 'checkbox', intervals: [] },
@@ -594,8 +589,12 @@
             { id: 'piano', name: 'Hraní na klavír', type: 'optional-checkbox', intervals: [] },
             { id: 'cold', name: 'Otužení', type: 'checkbox', intervals: [] },
             { id: 'chill', name: 'Chill', type: 'checkbox', intervals: [] },
+            { id: 'dots', name: '...', type: 'triple', intervals: [] },
+            { id: 'uplink', name: 'uplink', type: 'checkbox', intervals: [] },
             { id: 'rating', name: 'Hodnocení dne (1-10)', type: 'number', min: 7, max: 10, intervals: [] }
         ];
+
+        let activities = JSON.parse(JSON.stringify(defaultActivities));
 
         let db = {};
         let diary = {};
@@ -622,11 +621,21 @@
                 if (cloudData) {
                     db = cloudData.db || {};
                     diary = cloudData.diary || {};
-                    activities = cloudData.activities || activities;
+                    activities = cloudData.activities || JSON.parse(JSON.stringify(defaultActivities));
                     goals = cloudData.goals || {};
                     todoList = cloudData.todoList || [];
                     sportsList = cloudData.sportsList || sportsList;
                     
+                    // Odstranění staré položky muzeum, pokud ještě existuje v databázi
+                    activities = activities.filter(a => a.id !== 'museums');
+
+                    // Automatické doplnění chybějících výchozích položek (včetně "..." a "uplink")
+                    defaultActivities.forEach(defaultAct => {
+                        if (!activities.some(a => a.id === defaultAct.id)) {
+                            activities.push(JSON.parse(JSON.stringify(defaultAct)));
+                        }
+                    });
+
                     activities.forEach(a => {
                         if (!a.intervals) {
                             a.intervals = [];
@@ -663,12 +672,12 @@
 
         function vycistitZatoulaneUkoly() {
             let zmeny = false;
-            activities = activities.filter(a => a.name && a.name.trim() !== "." && a.name.trim() !== "");
+            activities = activities.filter(a => a.name && a.name.trim() !== "" && a.id !== 'museums');
 
             for (let y in db) {
                 for (let m in db[y]) {
                     for (let key in db[y][m]) {
-                        if (key === "." || key === "" || (key.startsWith('custom_') && !activities.some(a => a.id === key))) {
+                        if (key === "museums" || key === "" || (key.startsWith('custom_') && !activities.some(a => a.id === key))) {
                             delete db[y][m][key];
                             zmeny = true;
                         }
@@ -690,6 +699,13 @@
                 db[year][month] = { sports: {} };
                 activities.forEach(act => {
                     db[year][month][act.id] = Array(32).fill(act.type.includes('number') ? 0 : (act.type === 'triple' ? 'yellow' : false));
+                });
+            } else {
+                // Pojistka pro případ, že v již existujícím měsíci v cloudu chybí nově přidané řádky (např. uplink)
+                activities.forEach(act => {
+                    if (!db[year][month][act.id]) {
+                        db[year][month][act.id] = Array(32).fill(act.type.includes('number') ? 0 : (act.type === 'triple' ? 'yellow' : false));
+                    }
                 });
             }
         }
@@ -1040,7 +1056,6 @@
             document.getElementById('year-progress-date').innerText = `Den ${dayOfYear} z ${daysInYear}`;
         }
 
-        /* Nový plně funkční a spolehlivý Drag & Drop systém pro libovolné přetahování položek kamkoliv */
         function initDragAndDrop(containerId, listArray, onReorderCallback) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -1083,7 +1098,6 @@
 
                 const handle = item.querySelector('.drag-handle') || item;
 
-                // HTML5 Drag & Drop pro PC
                 item.ondragstart = (e) => {
                     draggedItem = item;
                     setTimeout(() => item.classList.add('dragging'), 0);
@@ -1097,7 +1111,6 @@
                     }
                 };
 
-                // Touch Drag & Drop pro Mobily
                 handle.ontouchstart = (e) => {
                     draggedItem = item;
                     item.classList.add('dragging');
@@ -1393,7 +1406,6 @@
                 saveToCloud(); renderGoals();
             };
             
-            // Pěkné vestavěné pole pro přidání nového roku v Cílech (bez window.prompt)
             document.getElementById('btn-toggle-add-year').onclick = () => {
                 const form = document.getElementById('add-year-form-container');
                 form.style.display = form.style.display === 'none' ? 'block' : 'none';
