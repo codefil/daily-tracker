@@ -6,6 +6,9 @@
     <title>Ultimate Cloud Life & Sport Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -53,27 +56,32 @@
 
     <style>
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --border-color: #334155;
+            --bg-color: #0b0f19;
+            --panel-bg: #151d30;
+            --panel-card: #1c2640;
+            --border-color: #2a3756;
             --text-color: #f1f5f9;
-            --danger-color: rgba(239, 68, 68, 0.2);
+            --text-muted: #94a3b8;
+            --danger-color: rgba(239, 68, 68, 0.25);
             --danger-text: #f87171;
-            --success-color: rgba(34, 197, 94, 0.2);
+            --success-color: rgba(34, 197, 94, 0.25);
             --success-text: #4ade80;
-            --warning-color: rgba(234, 179, 8, 0.2);
+            --warning-color: rgba(234, 179, 8, 0.25);
             --warning-text: #facc15;
             --primary: #3b82f6;
             --primary-hover: #2563eb;
+            --accent-purple: #8b5cf6;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             padding: 20px;
             font-size: 13px;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-color) 70%);
+            min-height: 100vh;
         }
 
         header {
@@ -85,95 +93,139 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .title-area { display: flex; align-items: center; gap: 15px; }
-        h1 { font-size: 22px; font-weight: 600; margin: 0; color: #fff; letter-spacing: -0.5px; }
-        #week-number-label { font-size: 14px; color: #94a3b8; font-weight: normal; }
+        .title-area { display: flex; align-items: center; gap: 12px; }
+        h1 { font-size: 22px; font-weight: 700; margin: 0; color: #fff; letter-spacing: -0.5px; }
+        #week-number-label { font-size: 14px; color: var(--text-muted); font-weight: 400; }
         .controls { display: flex; gap: 8px; flex-wrap: wrap; }
         
         button {
-            background-color: var(--panel-bg);
+            background-color: var(--panel-card);
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 600;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
-        button:hover { background-color: #334155; border-color: #475569; }
-        button.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+        button:hover { background-color: #273557; border-color: #3b82f6; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        button.active { background-color: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 12px rgba(59,130,246,0.4); }
 
         .dashboard-container { display: flex; flex-direction: column; gap: 20px; }
         .panel { 
             background-color: var(--panel-bg); 
             border: 1px solid var(--border-color); 
-            border-radius: 12px; 
-            padding: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            border-radius: 14px; 
+            padding: 18px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
         }
         
-        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; table-layout: fixed; }
-        th, td { border: 1px solid var(--border-color); padding: 5px 2px; height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; text-align: center; table-layout: fixed; }
+        th, td { border: 1px solid var(--border-color); padding: 6px 2px; height: 26px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        th:first-child, td:first-child { text-align: left; font-weight: 500; width: 160px; padding-left: 10px; background-color: var(--panel-bg); position: sticky; left: 0; z-index: 10; }
+        th:first-child, td:first-child { text-align: left; font-weight: 600; width: 160px; padding-left: 12px; background-color: var(--panel-bg); position: sticky; left: 0; z-index: 10; }
 
-        th.cell-clickable:hover { background-color: #334155; }
+        th.cell-clickable:hover { background-color: #273557; }
         
-        .today-header { border: 2px solid #38bdf8 !important; border-radius: 4px; }
-        .selected-day-header { background-color: var(--primary) !important; color: white; border-radius: 50%; display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; }
-        .selected-column { background-color: rgba(59, 130, 246, 0.08); }
+        .today-header { border: 2px solid #38bdf8 !important; background-color: rgba(56, 189, 248, 0.1); }
+        .selected-day-header { background-color: var(--primary) !important; color: white; border-radius: 50%; display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; }
+        .selected-column { background-color: rgba(59, 130, 246, 0.12) !important; }
 
-        .cell-clickable { cursor: pointer; user-select: none; }
+        .cell-clickable { cursor: pointer; user-select: none; transition: background 0.15s ease; }
         .status-red { background-color: var(--danger-color); color: var(--danger-text); }
         .status-green { background-color: var(--success-color); color: var(--success-text); }
         .status-yellow { background-color: var(--warning-color); color: var(--warning-text); }
-        .status-empty { background-color: #0f172a; color: #475569; }
+        .status-empty { background-color: #0b0f19; color: #475569; }
 
-        .cell-number-input { width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: 11px; outline: none; padding: 0; }
+        .cell-number-input { width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: 11px; outline: none; font-weight: bold; }
 
         .lower-section { display: flex; gap: 20px; }
         .flex-1 { flex: 1; }
 
-        .year-progress-container { margin-top: 10px; background-color: #0f172a; border-radius: 10px; height: 16px; width: 100%; position: relative; border: 1px solid var(--border-color); overflow: hidden; }
-        .year-progress-bar { background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; border-radius: 9px; width: 0%; transition: width 0.5s; }
-        .year-progress-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 11px; line-height: 16px; font-weight: bold; color: white; }
+        .year-progress-container { margin-top: 8px; background-color: #0b0f19; border-radius: 10px; height: 18px; width: 100%; position: relative; border: 1px solid var(--border-color); overflow: hidden; }
+        .year-progress-bar { background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; border-radius: 9px; width: 0%; transition: width 0.5s ease-in-out; }
+        .year-progress-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 11px; line-height: 18px; font-weight: 700; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; padding: 10px; box-sizing: border-box; }
-        .modal-content { background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; width: 550px; max-width: 100%; max-height: 90vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.82); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; padding: 12px; box-sizing: border-box; }
+        .modal-content { background-color: var(--panel-bg); border: 1px solid var(--border-color); padding: 22px; border-radius: 16px; width: 580px; max-width: 100%; max-height: 90vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
 
         .sport-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
-        .sport-item { background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
+        .sport-item { background: #0b0f19; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
         
-        .drag-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 8px 12px; border: 1px solid var(--border-color); margin-bottom: 6px; border-radius: 8px; }
+        /* Drag & Drop Prvky */
+        .drag-container { display: flex; flex-direction: column; gap: 8px; }
+        .drag-item, .goal-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            background: #0b0f19; 
+            padding: 10px 14px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 10px; 
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .drag-handle { 
+            cursor: grab; 
+            color: var(--text-muted); 
+            font-size: 16px; 
+            padding: 4px 8px; 
+            display: flex; 
+            align-items: center;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.04);
+        }
+        .drag-handle:active { cursor: grabbing; background: var(--primary); color: white; }
+        .dragging { opacity: 0.4; border: 2px dashed var(--primary); transform: scale(0.98); background: #1e293b; }
 
-        .goal-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
-        .goal-row.fancy-premium { border-left: 3px solid var(--primary); background: linear-gradient(145deg, #1e293b, #0f172a); }
-        .goal-text { flex: 1; background: transparent; border: none; color: white; font-size: 13px; outline: none; }
-        .goal-done { text-decoration: line-through; color: #64748b; }
+        .goal-row.fancy-premium { border-left: 4px solid var(--primary); background: linear-gradient(145deg, #1c2640, #0b0f19); }
+        .goal-text { flex: 1; background: transparent; border: none; color: white; font-size: 13px; outline: none; font-family: inherit; }
+        .goal-done { text-decoration: line-through; color: var(--text-muted); }
+
+        /* Záložky roků pro Cíle */
+        .year-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid var(--border-color); }
+        .year-tab { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .year-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .year-tab .btn-del-tab { font-size: 10px; color: #f87171; margin-left: 4px; border: none; background: transparent; padding: 0; cursor: pointer; }
 
         .diary-paper-layout { display: flex; gap: 20px; height: 70vh; }
         .diary-write-side { flex: 1.2; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border-color); padding-right: 20px; }
         .diary-read-side { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .diary-entry { background: #0f172a; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; }
-        .diary-date { color: var(--primary); font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        .diary-entry { background: #0b0f19; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 10px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
+        .diary-entry:hover { border-color: var(--primary); transform: translateY(-1px); }
+        .diary-date { color: var(--primary); font-weight: 600; margin-bottom: 6px; font-size: 12px; display: flex; justify-content: space-between; }
+
+        /* Jednotné elegantní písmo v deníku */
+        #diary-text, .diary-content-text {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 14px;
+            line-height: 1.7;
+        }
 
         ul { padding-left: 20px; margin: 8px 0; }
-        li { margin-bottom: 4px; }
+        li { margin-bottom: 6px; }
         
-        #loading-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#0f172a; display:flex; justify-content:center; align-items:center; z-index:9999; font-size:18px; color:white; }
+        #loading-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background:#0b0f19; display:flex; justify-content:center; align-items:center; z-index:9999; font-size:18px; color:white; font-weight:600; }
 
-        .delete-option-btn { width: 100%; text-align: left; padding: 12px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; color: white; cursor: pointer; transition: background 0.2s; }
-        .delete-option-btn:hover { background: #334155; }
-        
-        .order-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 2px 6px; font-size: 10px; border-radius: 4px; cursor: pointer; }
-        .order-btn:hover { background: #475569; }
+        .delete-option-btn { width: 100%; text-align: left; padding: 12px; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; color: white; cursor: pointer; transition: background 0.2s; }
+        .delete-option-btn:hover { background: #1c2640; border-color: var(--primary); }
+
+        .interval-tag { display: inline-flex; align-items: center; gap: 6px; background: #1c2640; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-size: 11px; margin-right: 5px; margin-bottom: 5px; }
+        .interval-tag button { padding: 0 4px; border: none; background: transparent; color: #f87171; box-shadow: none; }
 
         @media (max-width: 768px) {
             body { padding: 10px; font-size: 12px; }
@@ -235,12 +287,12 @@
         <div class="lower-section">
             <div class="panel flex-1">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap: wrap; gap: 5px;">
-                    <h3 style="margin:0; font-weight:500; font-size:15px;">Vývoj spánku (Průměr: <span id="avg-graph-value" style="color:var(--success-text);">0 hod</span>)</h3>
+                    <h3 style="margin:0; font-weight:600; font-size:15px;">Vývoj spánku (Průměr: <span id="avg-graph-value" style="color:var(--success-text);">0 hod</span>)</h3>
                     <div style="font-size:11px; display:flex; gap:10px; align-items:center;">
                         <div style="display:flex; gap:3px;">
-                            <button id="chart-period-w" style="padding:2px 6px; font-size:11px;">Týden</button>
-                            <button id="chart-period-m" style="padding:2px 6px; font-size:11px;">Měsíc</button>
-                            <button id="chart-period-y" style="padding:2px 6px; font-size:11px;">Rok</button>
+                            <button id="chart-period-w" style="padding:2px 8px; font-size:11px;">Týden</button>
+                            <button id="chart-period-m" style="padding:2px 8px; font-size:11px;">Měsíc</button>
+                            <button id="chart-period-y" style="padding:2px 8px; font-size:11px;">Rok</button>
                         </div>
                     </div>
                 </div>
@@ -248,14 +300,22 @@
             </div>
 
             <div class="panel" style="width: 260px;" id="sport-panel">
-                <h3 style="margin-top:0; font-weight:500; font-size:15px;">Sporty: <span id="selected-day-label" style="color:var(--primary);">...</span></h3>
+                <h3 style="margin-top:0; font-weight:600; font-size:15px;">Sporty: <span id="selected-day-label" style="color:var(--primary);">...</span></h3>
                 <div id="sport-selectors-container" class="sport-checkbox-group"></div>
-                <button id="btn-manage-sports" style="width: 100%; font-size: 11px; background: #0f172a; border-color: var(--border-color); padding: 5px;">🛠️ Upravit sporty</button>
+                <button id="btn-manage-sports" style="width: 100%; font-size: 11px; background: #0b0f19; border-color: var(--border-color); padding: 6px;">🛠️ Upravit sporty</button>
             </div>
 
-            <div class="panel" style="width: 220px;">
-                <h3 style="margin-top:0; font-weight:500; font-size:15px;">Podíl sportů (Měsíc)</h3>
-                <div style="height: 160px;"><canvas id="sportPieChart"></canvas></div>
+            <div class="panel" style="width: 240px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0; font-weight:600; font-size:14px;">Podíl sportů</h3>
+                    <select id="sport-pie-period" style="font-size:10px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px; padding:3px;">
+                        <option value="month">Tento měsíc</option>
+                        <option value="30days">Posledních 30 dní</option>
+                        <option value="year">Tento rok</option>
+                        <option value="all">Vše (All time)</option>
+                    </select>
+                </div>
+                <div style="height: 150px;"><canvas id="sportPieChart"></canvas></div>
             </div>
         </div>
 
@@ -264,8 +324,8 @@
             <button id="btn-open-big-stats" style="background-color: var(--primary); color:white; border-color: var(--primary);">Velké statistiky</button>
         </div>
 
-        <div class="panel" style="padding: 10px 15px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px; color:#94a3b8;">
+        <div class="panel" style="padding: 12px 18px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px; color:var(--text-muted);">
                 <span>Postup letošního roku</span>
                 <span id="year-progress-date"></span>
             </div>
@@ -280,8 +340,8 @@
     <div id="calendar-modal" class="modal"><div class="modal-content">
         <h3 style="margin-top:0;">Změnit měsíc</h3>
         <div style="display:flex; gap:10px; margin-bottom: 20px;">
-            <select id="select-month" style="flex:1; padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;"></select>
-            <select id="select-year" style="flex:1; padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;"></select>
+            <select id="select-month" style="flex:1; padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;"></select>
+            <select id="select-year" style="flex:1; padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;"></select>
         </div>
         <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
             <button onclick="closeModal('calendar-modal')">Zavřít</button>
@@ -291,18 +351,21 @@
 
     <!-- MODAL DENÍK -->
     <div id="diary-modal" class="modal"><div class="modal-content" style="width:90vw; max-width:1200px;">
-        <h2 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:10px;">Osobní velký sešit zápisků</h2>
+        <h2 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:12px;">Osobní velký sešit zápisků</h2>
         <div class="diary-paper-layout">
             <div class="diary-write-side">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:bold; font-size:14px;">Vyber datum zápisu:</span>
-                    <input type="date" id="diary-input-date" style="background:#0f172a; color:white; border:1px solid var(--border-color); padding:6px 12px; font-size:14px; border-radius:6px;">
+                    <span style="font-weight:600; font-size:14px;">Datum zápisu:</span>
+                    <input type="date" id="diary-input-date" style="background:#0b0f19; color:white; border:1px solid var(--border-color); padding:6px 12px; font-size:14px; border-radius:6px;">
                 </div>
-                <textarea id="diary-text" style="flex:1; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:8px; padding:15px; box-sizing:border-box; resize:none; font-size:15px; line-height:1.6;" placeholder="Rozepiš se, co se dneska zajímavého stalo..."></textarea>
-                <button id="btn-save-diary" style="background:var(--success-text); color:#000; border:none; padding:12px; font-size:14px; font-weight:bold; border-radius:8px; cursor:pointer;">Uložit záznam do sešitu</button>
+                <textarea id="diary-text" style="flex:1; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:8px; padding:15px; box-sizing:border-box; resize:none;" placeholder="Rozepiš se, co se dneska zajímavého stalo..."></textarea>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-save-diary" style="flex:1; background:var(--success-text); color:#000; border:none; padding:12px; font-size:14px; font-weight:bold; border-radius:8px; cursor:pointer;">Uložit / Upravit zápis</button>
+                    <button id="btn-delete-diary" style="display:none; background:var(--danger-text); color:#fff; border:none; padding:12px; font-size:14px; font-weight:bold; border-radius:8px; cursor:pointer;">Smazat</button>
+                </div>
             </div>
             <div class="diary-read-side">
-                <input type="text" id="diary-search" placeholder="Rychlé vyhledávání v zápiscích..." style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid var(--border-color); box-sizing:border-box; border-radius:6px; font-size:13px;">
+                <input type="text" id="diary-search" placeholder="Rychlé vyhledávání v zápiscích..." style="width:100%; padding:10px; background:#0b0f19; color:white; border:1px solid var(--border-color); box-sizing:border-box; border-radius:6px; font-size:13px;">
                 <div id="diary-logs-container" style="flex:1; overflow-y:auto; padding-right:5px;"></div>
             </div>
         </div>
@@ -310,7 +373,7 @@
     </div></div>
 
     <!-- MODAL TO-DO -->
-    <div id="todo-modal" class="modal"><div class="modal-content" style="width:600px;">
+    <div id="todo-modal" class="modal"><div class="modal-content" style="width:700px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h2 style="margin:0;">📋 Průběžný To-Do List</h2>
             <div style="display:flex; gap:6px;">
@@ -318,19 +381,35 @@
                 <button id="btn-add-todo" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat</button>
             </div>
         </div>
-        <div id="todo-list-container" style="max-height:50vh; overflow-y:auto; margin-bottom:15px;"></div>
+        <div id="todo-list-container" class="drag-container" style="max-height:60vh; overflow-y:auto; margin-bottom:15px;"></div>
         <div style="text-align:right; border-top:1px solid var(--border-color); padding-top:15px;">
             <button onclick="closeModal('todo-modal')" style="padding:8px 20px;">Zavřít</button>
         </div>
     </div></div>
 
     <!-- MODAL CÍLE -->
-    <div id="goals-modal" class="modal"><div class="modal-content" style="width:600px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0;">🎯 Roční cíle pro rok <span id="goals-year-title"></span></h2>
+    <div id="goals-modal" class="modal"><div class="modal-content" style="width:750px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 style="margin:0;">🎯 Roční cíle</h2>
             <button id="btn-add-goal" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat cíl</button>
         </div>
-        <div id="goals-list-container" style="max-height:50vh; overflow-y:auto; margin-bottom:15px;"></div>
+        
+        <!-- Roční záložky pro cíle -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div id="goals-year-tabs" class="year-tabs" style="margin-bottom:0; flex:1;"></div>
+            <button id="btn-toggle-add-year" style="font-size:11px; padding:5px 10px; margin-left:10px; background:#1c2640;">+ Přidat rok</button>
+        </div>
+
+        <!-- Form pro přidání nového roku bez prompt Window -->
+        <div id="add-year-form-container" style="display:none; background:#0b0f19; padding:10px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:15px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="number" id="new-goals-year-input" placeholder="Zadej rok (např. 2027)" style="flex:1; padding:6px 10px; background:#151d30; border:1px solid var(--border-color); color:white; border-radius:6px;">
+                <button id="btn-confirm-add-year" style="background:var(--success-text); color:#000;">Vytvořit</button>
+                <button onclick="document.getElementById('add-year-form-container').style.display='none'">Zrušit</button>
+            </div>
+        </div>
+
+        <div id="goals-list-container" class="drag-container" style="max-height:60vh; overflow-y:auto; margin-bottom:15px;"></div>
         <div style="text-align:right; border-top:1px solid var(--border-color); padding-top:15px;">
             <button onclick="closeModal('goals-modal')" style="padding:8px 20px;">Zavřít</button>
         </div>
@@ -340,7 +419,7 @@
     <div id="big-stats-modal" class="modal"><div class="modal-content" style="width:580px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
             <h2 style="margin:0;">Centrum Statistik & Analýzy</h2>
-            <select id="stats-period" style="padding:5px 10px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
+            <select id="stats-period" style="padding:5px 10px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;">
                 <option value="week">Tento týden</option>
                 <option value="month">Tento měsíc</option>
                 <option value="year">Tento rok</option>
@@ -355,7 +434,7 @@
     <div id="year-modal" class="modal"><div class="modal-content" style="width:95vw; max-width:1400px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
             <h2 style="margin:0;">Přehled celého roku</h2>
-            <select id="year-overview-select" style="padding:6px 12px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px; font-size:14px;"></select>
+            <select id="year-overview-select" style="padding:6px 12px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px; font-size:14px;"></select>
         </div>
         <div id="year-tables-container" style="display:grid; grid-template-columns: 1fr; width:100%; gap:20px; max-height:75vh; overflow-y:auto;"></div>
         <div style="text-align:right; margin-top:20px;"><button onclick="closeModal('year-modal')">Zavřít</button></div>
@@ -365,7 +444,7 @@
     <div id="sports-management-modal" class="modal"><div class="modal-content" style="width:400px;">
         <h3 style="margin-top:0;">Správa seznamu sportů</h3>
         <div style="display:flex; gap:6px; margin-bottom:15px;">
-            <input type="text" id="new-sport-name-input" placeholder="Nový sport (např. Basketbal)" style="flex:1; padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
+            <input type="text" id="new-sport-name-input" placeholder="Nový sport (např. Basketbal)" style="flex:1; padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;">
             <button id="btn-add-new-sport" style="background:var(--primary); color:white; border-color:var(--primary);">+ Přidat</button>
         </div>
         <div id="sports-management-list" style="max-height:40vh; overflow-y:auto; margin-bottom:15px;"></div>
@@ -375,41 +454,41 @@
     </div></div>
 
     <!-- MODAL NASTAVENÍ A SPRÁVA ŘÁDKŮ -->
-    <div id="settings-modal" class="modal"><div class="modal-content" style="width:620px;">
+    <div id="settings-modal" class="modal"><div class="modal-content" style="width:640px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <h3 style="margin:0;" id="settings-title">Správa řádků</h3>
             <label id="toggle-archived-container" style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
-                <input type="checkbox" id="chk-show-archived" onchange="renderSettingsList()"> Zobrazit i smazané / neaktivní
+                <input type="checkbox" id="chk-show-archived" onchange="renderSettingsList()"> Zobrazit i neaktivní
             </label>
         </div>
         
         <div id="settings-main-view">
-            <div id="modal-activity-list" style="max-height:240px; overflow-y:auto; margin-bottom:15px;"></div>
+            <div id="modal-activity-list" class="drag-container" style="max-height:280px; overflow-y:auto; margin-bottom:15px;"></div>
             
             <hr style="border:0; border-top:1px solid var(--border-color); margin:15px 0;">
             <h4>Vytvořit nový řádek</h4>
             <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <input type="text" id="new-act-name" placeholder="Název aktivity (např. Čtení)" style="flex:1; padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
-                <select id="new-act-type" style="padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
+                <input type="text" id="new-act-name" placeholder="Název aktivity (např. Dovolená)" style="flex:1; padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;">
+                <select id="new-act-type" style="padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;">
                     <option value="checkbox">Zaškrtávací (Červená / Zelená)</option>
                     <option value="optional-checkbox">Volitelný (Žlutá / Zelená)</option>
                     <option value="triple">Třístavový (Žlutá / Zelená / Červená)</option>
                     <option value="number">Číselné rozmezí</option>
                 </select>
             </div>
-            <div id="modal-limit-group" style="display:none; margin-bottom:15px; background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border-color);">
-                Zelená barva od <input type="number" id="new-act-min" value="7" style="width:50px; background:#1e293b; color:white; border:1px solid #475569; border-radius:4px; text-align:center;"> do <input type="number" id="new-act-max" value="10" style="width:50px; background:#1e293b; color:white; border:1px solid #475569; border-radius:4px; text-align:center;">
+            <div id="modal-limit-group" style="display:none; margin-bottom:15px; background:#0b0f19; padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                Zelená barva od <input type="number" id="new-act-min" value="7" style="width:50px; background:#1c2640; color:white; border:1px solid var(--border-color); border-radius:4px; text-align:center;"> do <input type="number" id="new-act-max" value="10" style="width:50px; background:#1c2640; color:white; border:1px solid var(--border-color); border-radius:4px; text-align:center;">
             </div>
 
-            <p style="margin:5px 0 6px 0; font-size:12px; color:#94a3b8;">Časové rozmezí nasazení položky v tabulce:</p>
-            <div style="display:flex; gap:10px; background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px;">
+            <p style="margin:5px 0 6px 0; font-size:12px; color:var(--text-muted);">První časové rozmezí nasazení (dovolená / aktivita):</p>
+            <div style="display:flex; gap:10px; background:#0b0f19; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px;">
                 <div style="flex:1;">
-                    <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:2px;">Aktivní od:</label>
-                    <input type="date" id="new-act-start-date" style="width:100%; box-sizing:border-box; background:#1e293b; color:white; border:1px solid #475569; padding:5px; border-radius:4px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Aktivní od:</label>
+                    <input type="date" id="new-act-start-date" style="width:100%; box-sizing:border-box; background:#1c2640; color:white; border:1px solid var(--border-color); padding:5px; border-radius:4px;">
                 </div>
                 <div style="flex:1;">
-                    <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:2px;">Aktivní do (volitelné):</label>
-                    <input type="date" id="new-act-end-date" style="width:100%; box-sizing:border-box; background:#1e293b; color:white; border:1px solid #475569; padding:5px; border-radius:4px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Aktivní do (volitelné):</label>
+                    <input type="date" id="new-act-end-date" style="width:100%; box-sizing:border-box; background:#1c2640; color:white; border:1px solid var(--border-color); padding:5px; border-radius:4px;">
                 </div>
             </div>
 
@@ -420,34 +499,38 @@
         </div>
 
         <div id="settings-edit-view" style="display:none;">
-            <h4 style="margin-top:0;">Upravit řádek: <span id="edit-act-original-name" style="color:var(--primary);"></span></h4>
+            <h4 style="margin-top:0;">Upravit / Naplánovat úkol: <span id="edit-act-original-name" style="color:var(--primary);"></span></h4>
             <div style="margin-bottom:12px;">
-                <label style="display:block; margin-bottom:4px; color:#94a3b8;">Název položky:</label>
-                <input type="text" id="edit-act-name" style="width:100%; padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
+                <label style="display:block; margin-bottom:4px; color:var(--text-muted);">Název položky:</label>
+                <input type="text" id="edit-act-name" style="width:100%; padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;">
             </div>
             <div style="margin-bottom:12px;">
-                <label style="display:block; margin-bottom:4px; color:#94a3b8;">Typ pole:</label>
-                <select id="edit-act-type" style="width:100%; padding:8px; background:#0f172a; color:white; border:1px solid var(--border-color); border-radius:6px;">
+                <label style="display:block; margin-bottom:4px; color:var(--text-muted);">Typ pole:</label>
+                <select id="edit-act-type" style="width:100%; padding:8px; background:#0b0f19; color:white; border:1px solid var(--border-color); border-radius:6px;">
                     <option value="checkbox">Zaškrtávací (Červená / Zelená)</option>
                     <option value="optional-checkbox">Volitelný úkol (Žlutá / Zelená)</option>
                     <option value="triple">Třístavový (Žlutá / Zelená / Červená)</option>
                     <option value="number">Číselné rozmezí</option>
                 </select>
             </div>
-            <div id="edit-limit-group" style="display:none; margin-bottom:12px; background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border-color);">
-                Zelená barva od <input type="number" id="edit-act-min" style="width:50px; background:#1e293b; color:white; border:1px solid #475569; border-radius:4px; text-align:center;"> do <input type="number" id="edit-act-max" style="width:50px; background:#1e293b; color:white; border:1px solid #475569; border-radius:4px; text-align:center;">
+            <div id="edit-limit-group" style="display:none; margin-bottom:12px; background:#0b0f19; padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                Zelená barva od <input type="number" id="edit-act-min" style="width:50px; background:#1c2640; color:white; border:1px solid var(--border-color); border-radius:4px; text-align:center;"> do <input type="number" id="edit-act-max" style="width:50px; background:#1c2640; color:white; border:1px solid var(--border-color); border-radius:4px; text-align:center;">
             </div>
             
-            <p style="margin:5px 0 4px 0; font-size:12px; color:#94a3b8;">Časové rozmezí platnosti:</p>
-            <div style="display:flex; gap:10px; background:#0f172a; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px;">
+            <p style="margin:10px 0 4px 0; font-size:12px; font-weight:bold; color:#fff;">Uložená časová období (Dovolené / Aktivace):</p>
+            <div id="edit-act-intervals-list" style="margin-bottom:12px; background:#0b0f19; padding:10px; border-radius:6px; border:1px solid var(--border-color); min-height:40px;"></div>
+
+            <p style="margin:5px 0 4px 0; font-size:12px; color:var(--text-muted);">+ Přidat další obdobní platnosti (Od - Do):</p>
+            <div style="display:flex; gap:10px; background:#0b0f19; padding:10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:15px; align-items:flex-end;">
                 <div style="flex:1;">
-                    <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:2px;">Aktivní od:</label>
-                    <input type="date" id="edit-act-start-date" style="width:100%; box-sizing:border-box; background:#1e293b; color:white; border:1px solid #475569; padding:5px; border-radius:4px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Od:</label>
+                    <input type="date" id="edit-act-new-start" style="width:100%; box-sizing:border-box; background:#1c2640; color:white; border:1px solid var(--border-color); padding:5px; border-radius:4px;">
                 </div>
                 <div style="flex:1;">
-                    <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:2px;">Aktivní do (při smazání/archivu):</label>
-                    <input type="date" id="edit-act-end-date" style="width:100%; box-sizing:border-box; background:#1e293b; color:white; border:1px solid #475569; padding:5px; border-radius:4px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Do (volitelné):</label>
+                    <input type="date" id="edit-act-new-end" style="width:100%; box-sizing:border-box; background:#1c2640; color:white; border:1px solid var(--border-color); padding:5px; border-radius:4px;">
                 </div>
+                <button id="btn-add-interval-to-edit" style="background:var(--primary); color:white; border-color:var(--primary); height:31px;">+ Přidat</button>
             </div>
 
             <div style="text-align:right; display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
@@ -458,16 +541,18 @@
 
         <div id="settings-delete-view" style="display:none;">
             <h4 style="margin-top:0; color:var(--danger-text);">Odstranění úkolu "<span id="delete-act-name"></span>"</h4>
-            <p style="color:#94a3b8; font-size:12px; margin-bottom:15px;">Zvol, co se má stát s dosavadními záznamy v tabulce:</p>
             
+            <p style="color:var(--text-muted); font-size:12px; margin-bottom:6px;">Zvol datum, do kterého byl úkol platný (nebo ponech prázdné pro ukončení k dnešku):</p>
+            <input type="date" id="delete-act-date" style="width:100%; box-sizing:border-box; background:#0b0f19; color:white; border:1px solid var(--border-color); padding:8px; border-radius:6px; margin-bottom:15px;">
+
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <button class="delete-option-btn" onclick="executeChytréSmazani('archive')">
-                    <strong>Ukončit k dnešku (Ponechat v historii)</strong><br>
-                    <span style="color:#94a3b8; font-size:11px;">Záznamy v minulosti zůstanou zachovány, ale od zítřka úkol z tabulky zmizí. Můžeš jej kdykoliv obnovit.</span>
+                    <strong>Ukončit k zvolenému datu (Ponechat v historii)</strong><br>
+                    <span style="color:var(--text-muted); font-size:11px;">Záznamy do tohoto data zůstanou v tabulce. Kdykoliv ho můžeš upravit a obnovit.</span>
                 </button>
                 <button class="delete-option-btn" onclick="executeChytréSmazani('all')">
                     <strong>Trvale vymazat odevšad</strong><br>
-                    <span style="color:#94a3b8; font-size:11px;">Kompletně odstraní úkol i veškerou jeho historii ze všech měsíců a dnů.</span>
+                    <span style="color:var(--text-muted); font-size:11px;">Kompletně odstraní úkol i veškerou jeho historii ze všech měsíců a dnů.</span>
                 </button>
             </div>
             <div style="text-align:right; margin-top:20px;">
@@ -487,8 +572,10 @@
         const isMobileDevice = window.innerWidth <= 768;
         let currentView = localStorage.getItem('tracker_current_view') || (isMobileDevice ? 'week' : 'month');
         let graphPeriod = localStorage.getItem('tracker_graph_period') || 'month';
+        let sportPiePeriod = localStorage.getItem('tracker_sport_pie_period') || '30days';
         
         let yearOverviewSelectedYear = parseInt(localStorage.getItem('tracker_year_overview_year')) || today.getFullYear();
+        let goalsSelectedYear = currentYear;
         let statsPeriodSaved = localStorage.getItem('tracker_stats_period') || 'month';
         
         let weekStartDay = Math.max(1, today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
@@ -497,17 +584,17 @@
         let sportsList = ["Běh", "Gym", "Fotbal", "Kolo", "Plavání", "Tenis", "Procházka", "Ostatní"];
 
         let activities = [
-            { id: 'sleep', name: 'Spánek (hodiny)', type: 'number', min: 6, max: 10, start: "", end: "" },
-            { id: 'learn', name: 'Učení', type: 'checkbox', start: "", end: "" },
-            { id: 'home', name: 'Práce / Pomoc doma', type: 'checkbox', start: "", end: "" },
-            { id: 'active', name: 'Aktivita', type: 'checkbox', start: "", end: "" },
-            { id: 'stretch', name: 'Protažení', type: 'checkbox', start: "", end: "" },
-            { id: 'read', name: 'Čtení', type: 'checkbox', start: "", end: "" },
-            { id: 'typing', name: 'Psaní všemi deseti', type: 'optional-checkbox', start: "", end: "" },
-            { id: 'piano', name: 'Hraní na klavír', type: 'optional-checkbox', start: "", end: "" },
-            { id: 'cold', name: 'Otužení', type: 'checkbox', start: "", end: "" },
-            { id: 'chill', name: 'Chill', type: 'checkbox', start: "", end: "" },
-            { id: 'rating', name: 'Hodnocení dne (1-10)', type: 'number', min: 7, max: 10, start: "", end: "" }
+            { id: 'sleep', name: 'Spánek (hodiny)', type: 'number', min: 6, max: 10, intervals: [] },
+            { id: 'learn', name: 'Učení', type: 'checkbox', intervals: [] },
+            { id: 'home', name: 'Práce / Pomoc doma', type: 'checkbox', intervals: [] },
+            { id: 'active', name: 'Aktivita', type: 'checkbox', intervals: [] },
+            { id: 'stretch', name: 'Protažení', type: 'checkbox', intervals: [] },
+            { id: 'read', name: 'Čtení', type: 'checkbox', intervals: [] },
+            { id: 'typing', name: 'Psaní všemi deseti', type: 'optional-checkbox', intervals: [] },
+            { id: 'piano', name: 'Hraní na klavír', type: 'optional-checkbox', intervals: [] },
+            { id: 'cold', name: 'Otužení', type: 'checkbox', intervals: [] },
+            { id: 'chill', name: 'Chill', type: 'checkbox', intervals: [] },
+            { id: 'rating', name: 'Hodnocení dne (1-10)', type: 'number', min: 7, max: 10, intervals: [] }
         ];
 
         let db = {};
@@ -519,6 +606,7 @@
         let sportChartInstance = null;
         let activeEditingId = null;
         let activeDeletingId = null;
+        let tempEditingIntervals = [];
 
         function getWeekNumber(d) {
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -540,8 +628,12 @@
                     sportsList = cloudData.sportsList || sportsList;
                     
                     activities.forEach(a => {
-                        if (a.start === undefined) a.start = "";
-                        if (a.end === undefined) a.end = "";
+                        if (!a.intervals) {
+                            a.intervals = [];
+                            if (a.start || a.end) {
+                                a.intervals.push({ start: a.start || "", end: a.end || "" });
+                            }
+                        }
                     });
                 }
                 
@@ -561,6 +653,7 @@
                 document.getElementById('chart-period-y').classList.remove('active');
                 document.getElementById(`chart-period-${graphPeriod.substring(0,1)}`).classList.add('active');
                 
+                document.getElementById('sport-pie-period').value = sportPiePeriod;
                 document.getElementById('stats-period').value = statsPeriodSaved;
                 
                 renderDashboard();
@@ -608,6 +701,11 @@
                 localStorage.setItem('tracker_stats_period', e.target.value);
                 calculateBigStats();
             };
+            document.getElementById('sport-pie-period').onchange = (e) => {
+                sportPiePeriod = e.target.value;
+                localStorage.setItem('tracker_sport_pie_period', sportPiePeriod);
+                renderSportPieChart();
+            };
         }
 
         function buildCalendarSelects() {
@@ -623,10 +721,14 @@
         }
 
         function isActivityVisibleOnDate(act, year, month, day) {
+            if (!act.intervals || act.intervals.length === 0) return true;
             let cellDateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-            if (act.start && cellDateStr < act.start) return false;
-            if (act.end && cellDateStr > act.end) return false;
-            return true;
+            
+            return act.intervals.some(inter => {
+                let startOk = !inter.start || cellDateStr >= inter.start;
+                let endOk = !inter.end || cellDateStr <= inter.end;
+                return startOk && endOk;
+            });
         }
 
         function renderDashboard() {
@@ -748,7 +850,11 @@
             }
         }
 
-        window.selectDay = function(d) { selectedDay = d; renderTable(); renderSportPanel(); }
+        window.selectDay = function(d) { 
+            selectedDay = d; 
+            renderTable(); 
+            renderSportPanel(); 
+        }
         
         window.toggleCheckbox = function(id, d) { 
             db[currentYear][currentMonth][id][d] = !db[currentYear][currentMonth][id][d]; 
@@ -824,7 +930,7 @@
                     labels: labels,
                     datasets: [{ data: dataPoints, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: graphPeriod==='month'?1:3, tension: 0.15 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { min: 0, max: 12, grid: { color: '#334155' } }, x: { grid: { display: false } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { min: 0, max: 12, grid: { color: '#2a3756' } }, x: { grid: { display: false } } } }
             });
         }
 
@@ -859,11 +965,43 @@
         function renderSportPieChart() {
             const ctx = document.getElementById('sportPieChart').getContext('2d');
             let counts = Array(sportsList.length).fill(0);
-            let totalDays = getDaysInMonth(currentYear, currentMonth);
 
-            for(let d=1; d<=totalDays; d++) {
-                if(db[currentYear][currentMonth].sports && db[currentYear][currentMonth].sports[d]) {
-                    sportsList.forEach((s, idx) => { if(db[currentYear][currentMonth].sports[d][s]) counts[idx]++; });
+            if (sportPiePeriod === 'month') {
+                let totalDays = getDaysInMonth(currentYear, currentMonth);
+                for (let d = 1; d <= totalDays; d++) {
+                    if (db[currentYear] && db[currentYear][currentMonth] && db[currentYear][currentMonth].sports && db[currentYear][currentMonth].sports[d]) {
+                        sportsList.forEach((s, idx) => { if (db[currentYear][currentMonth].sports[d][s]) counts[idx]++; });
+                    }
+                }
+            } else if (sportPiePeriod === '30days') {
+                let tempDate = new Date(currentYear, currentMonth, selectedDay);
+                for (let i = 0; i < 30; i++) {
+                    let y = tempDate.getFullYear();
+                    let m = tempDate.getMonth();
+                    let d = tempDate.getDate();
+                    if (db[y] && db[y][m] && db[y][m].sports && db[y][m].sports[d]) {
+                        sportsList.forEach((s, idx) => { if (db[y][m].sports[d][s]) counts[idx]++; });
+                    }
+                    tempDate.setDate(tempDate.getDate() - 1);
+                }
+            } else if (sportPiePeriod === 'year') {
+                for (let m = 0; m < 12; m++) {
+                    let totalDays = getDaysInMonth(currentYear, m);
+                    for (let d = 1; d <= totalDays; d++) {
+                        if (db[currentYear] && db[currentYear][m] && db[currentYear][m].sports && db[currentYear][m].sports[d]) {
+                            sportsList.forEach((s, idx) => { if (db[currentYear][m].sports[d][s]) counts[idx]++; });
+                        }
+                    }
+                }
+            } else if (sportPiePeriod === 'all') {
+                for (let y in db) {
+                    for (let m in db[y]) {
+                        if (db[y][m].sports) {
+                            for (let d in db[y][m].sports) {
+                                sportsList.forEach((s, idx) => { if (db[y][m].sports[d][s]) counts[idx]++; });
+                            }
+                        }
+                    }
                 }
             }
 
@@ -902,60 +1040,181 @@
             document.getElementById('year-progress-date').innerText = `Den ${dayOfYear} z ${daysInYear}`;
         }
 
+        /* Nový plně funkční a spolehlivý Drag & Drop systém pro libovolné přetahování položek kamkoliv */
+        function initDragAndDrop(containerId, listArray, onReorderCallback) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            let draggedItem = null;
+
+            const getDragAfterElement = (container, y) => {
+                const draggableElements = [...container.querySelectorAll('.drag-item:not(.dragging), .goal-row:not(.dragging)')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            };
+
+            const syncArrayWithDOM = () => {
+                const newArray = [];
+                const items = container.querySelectorAll('.drag-item, .goal-row');
+                items.forEach(item => {
+                    const idx = parseInt(item.dataset.dragIndex);
+                    if (!isNaN(idx) && listArray[idx]) {
+                        newArray.push(listArray[idx]);
+                    }
+                });
+                
+                listArray.length = 0;
+                listArray.push(...newArray);
+                onReorderCallback();
+            };
+
+            const items = container.querySelectorAll('.drag-item, .goal-row');
+            items.forEach((item, index) => {
+                item.dataset.dragIndex = index;
+                item.setAttribute('draggable', 'true');
+
+                const handle = item.querySelector('.drag-handle') || item;
+
+                // HTML5 Drag & Drop pro PC
+                item.ondragstart = (e) => {
+                    draggedItem = item;
+                    setTimeout(() => item.classList.add('dragging'), 0);
+                };
+
+                item.ondragend = () => {
+                    if (draggedItem) {
+                        draggedItem.classList.remove('dragging');
+                        draggedItem = null;
+                        syncArrayWithDOM();
+                    }
+                };
+
+                // Touch Drag & Drop pro Mobily
+                handle.ontouchstart = (e) => {
+                    draggedItem = item;
+                    item.classList.add('dragging');
+                };
+
+                handle.ontouchmove = (e) => {
+                    if (!draggedItem) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const afterElement = getDragAfterElement(container, touch.clientY);
+                    if (afterElement == null) {
+                        container.appendChild(draggedItem);
+                    } else {
+                        container.insertBefore(draggedItem, afterElement);
+                    }
+                };
+
+                handle.ontouchend = () => {
+                    if (draggedItem) {
+                        draggedItem.classList.remove('dragging');
+                        draggedItem = null;
+                        syncArrayWithDOM();
+                    }
+                };
+            });
+
+            container.ondragover = (e) => {
+                e.preventDefault();
+                if (!draggedItem) return;
+                const afterElement = getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(draggedItem);
+                } else {
+                    container.insertBefore(draggedItem, afterElement);
+                }
+            };
+        }
+
         function renderTodoList() {
             const container = document.getElementById('todo-list-container');
             let html = '';
             todoList.forEach((t, idx) => {
-                html += `<div class="goal-row">
-                    <button class="order-btn" onclick="moveTodo(${idx}, -1)">▲</button>
-                    <button class="order-btn" onclick="moveTodo(${idx}, 1)">▼</button>
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${idx})" style="margin-left: 5px;">
+                html += `<div class="goal-row" data-drag-index="${idx}">
+                    <span class="drag-handle">☰</span>
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${idx})" style="margin-left: 2px;">
                     <input type="text" class="goal-text ${t.done ? 'goal-done' : ''}" value="${t.text}" onchange="updateTodoText(${idx}, this.value)" placeholder="Zadej rychlý úkol...">
                     <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
                 </div>`;
             });
-            if(todoList.length === 0) html = '<p style="color:#64748b; text-align:center;">To-Do list je prázdný.</p>';
+            if(todoList.length === 0) html = '<p style="color:var(--text-muted); text-align:center;">To-Do list je prázdný.</p>';
             container.innerHTML = html;
+
+            initDragAndDrop('todo-list-container', todoList, () => {
+                saveToCloud();
+                renderTodoList();
+            });
         }
 
         window.toggleTodo = function(idx) { todoList[idx].done = !todoList[idx].done; saveToCloud(); renderTodoList(); }
         window.updateTodoText = function(idx, val) { todoList[idx].text = val; saveToCloud(); }
         window.deleteTodo = function(idx) { todoList.splice(idx, 1); saveToCloud(); renderTodoList(); }
-        window.moveTodo = function(idx, dir) {
-            let nIdx = idx + dir;
-            if(nIdx >= 0 && nIdx < todoList.length) {
-                let tmp = todoList[idx]; todoList[idx] = todoList[nIdx]; todoList[nIdx] = tmp;
-                saveToCloud(); renderTodoList();
-            }
-        }
 
         function renderGoals() {
             const container = document.getElementById('goals-list-container');
-            if (!goals[currentYear]) goals[currentYear] = [];
+            const tabsContainer = document.getElementById('goals-year-tabs');
+            
+            let allYears = Object.keys(goals).map(Number);
+            if (!allYears.includes(goalsSelectedYear)) allYears.push(goalsSelectedYear);
+            allYears.sort();
+
+            let tabsHTML = '';
+            allYears.forEach(y => {
+                tabsHTML += `<div class="year-tab ${y === goalsSelectedYear ? 'active' : ''}" onclick="switchGoalsYear(${y})">
+                    Rok ${y} 
+                    <button class="btn-del-tab" onclick="deleteGoalsYear(event, ${y})" title="Smazat tento rok">✕</button>
+                </div>`;
+            });
+            tabsContainer.innerHTML = tabsHTML;
+
+            if (!goals[goalsSelectedYear]) goals[goalsSelectedYear] = [];
             let html = '';
-            goals[currentYear].forEach((g, idx) => {
-                html += `<div class="goal-row fancy-premium">
-                    <button class="order-btn" onclick="moveGoal(${idx}, -1)">▲</button>
-                    <button class="order-btn" onclick="moveGoal(${idx}, 1)">▼</button>
-                    <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${idx})" style="margin-left: 5px;">
+            goals[goalsSelectedYear].forEach((g, idx) => {
+                html += `<div class="goal-row fancy-premium" data-drag-index="${idx}">
+                    <span class="drag-handle">☰</span>
+                    <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${idx})" style="margin-left: 2px;">
                     <input type="text" class="goal-text ${g.done ? 'goal-done' : ''}" value="${g.text}" onchange="updateGoalText(${idx}, this.value)" placeholder="Zadej velký roční cíl...">
                     <button onclick="deleteGoal(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
                 </div>`;
             });
-            if(goals[currentYear].length === 0) html = `<p style="color:#64748b; text-align:center;">Žádné stanovené cíle pro rok ${currentYear}.</p>`;
+            if(goals[goalsSelectedYear].length === 0) html = `<p style="color:var(--text-muted); text-align:center;">Žádné stanovené cíle pro rok ${goalsSelectedYear}.</p>`;
             container.innerHTML = html;
+
+            initDragAndDrop('goals-list-container', goals[goalsSelectedYear], () => {
+                saveToCloud();
+                renderGoals();
+            });
         }
 
-        window.toggleGoal = function(idx) { goals[currentYear][idx].done = !goals[currentYear][idx].done; saveToCloud(); renderGoals(); }
-        window.updateGoalText = function(idx, val) { goals[currentYear][idx].text = val; saveToCloud(); }
-        window.deleteGoal = function(idx) { goals[currentYear].splice(idx, 1); saveToCloud(); renderGoals(); }
-        window.moveGoal = function(idx, dir) {
-            let nIdx = idx + dir;
-            if(nIdx >= 0 && nIdx < goals[currentYear].length) {
-                let tmp = goals[currentYear][idx]; goals[currentYear][idx] = goals[currentYear][nIdx]; goals[currentYear][nIdx] = tmp;
-                saveToCloud(); renderGoals();
+        window.switchGoalsYear = function(y) {
+            goalsSelectedYear = y;
+            renderGoals();
+        }
+
+        window.deleteGoalsYear = function(e, y) {
+            e.stopPropagation();
+            if (confirm(`Opravdu chceš smazat rok ${y} a všechny jeho cíle?`)) {
+                delete goals[y];
+                let remainingYears = Object.keys(goals).map(Number);
+                goalsSelectedYear = remainingYears.length > 0 ? remainingYears[0] : currentYear;
+                saveToCloud();
+                renderGoals();
             }
         }
+
+        window.toggleGoal = function(idx) { goals[goalsSelectedYear][idx].done = !goals[goalsSelectedYear][idx].done; saveToCloud(); renderGoals(); }
+        window.updateGoalText = function(idx, val) { goals[goalsSelectedYear][idx].text = val; saveToCloud(); }
+        window.deleteGoal = function(idx) { goals[goalsSelectedYear].splice(idx, 1); saveToCloud(); renderGoals(); }
 
         function renderSettingsList() {
             const container = document.getElementById('modal-activity-list');
@@ -963,51 +1222,35 @@
             container.innerHTML = '';
             
             activities.forEach((act, realIdx) => {
-                let isArchived = (act.end && act.end <= today.toISOString().split('T')[0]);
-                if (isArchived && !showArchived) return; 
+                let isVisibleNow = isActivityVisibleOnDate(act, today.getFullYear(), today.getMonth(), today.getDate());
+                if (!isVisibleNow && !showArchived) return; 
 
                 const item = document.createElement('div');
                 item.className = 'drag-item';
-                item.dataset.index = realIdx;
-                if (isArchived) item.style.opacity = '0.6';
+                item.dataset.dragIndex = realIdx;
+                if (!isVisibleNow) item.style.opacity = '0.6';
                 
                 let typeBadge = act.type === 'optional-checkbox' ? 'žlutý' : (act.type === 'checkbox' ? 'zaškrtávací' : (act.type==='triple' ? '3-stav' : 'číslo'));
-                let archivedTag = isArchived ? ' <span style="color:var(--danger-text); font-size:10px;">[Smazáno/Archiv]</span>' : '';
+                let archivedTag = !isVisibleNow ? ' <span style="color:var(--danger-text); font-size:10px;">[Neaktivní k dnešku]</span>' : '';
 
                 item.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button class="order-btn" onclick="moveActivity(${realIdx}, -1)">▲</button>
-                        <button class="order-btn" onclick="moveActivity(${realIdx}, 1)">▼</button>
-                        <span style="color:#fff; font-weight:500; margin-left:5px;">${act.name}</span>
-                        <small style="color:#94a3b8; margin-left:3px;">(${typeBadge})</small>${archivedTag}
+                    <div style="display:flex; align-items:center; gap:6px; flex:1;">
+                        <span class="drag-handle">☰</span>
+                        <span style="color:#fff; font-weight:500; margin-left:2px;">${act.name}</span>
+                        <small style="color:var(--text-muted); margin-left:3px;">(${typeBadge})</small>${archivedTag}
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button onclick="openEditActivityView('${act.id}')" style="background:#334155; color:#3b82f6; border:1px solid #475569; padding:3px 8px; font-size:11px; border-radius:4px;">Upravit</button>
-                        ${isArchived ? 
-                            `<button onclick="restoreActivity('${act.id}')" style="background:#334155; color:var(--success-text); border:1px solid #475569; padding:3px 8px; font-size:11px; border-radius:4px;">Obnovit</button>` : 
-                            `<button onclick="openChytréSmazaniView('${act.id}')" style="color:var(--danger-text); background:#334155; border:1px solid #475569; padding:3px 8px; font-size:11px; border-radius:4px;">Odstranit</button>`
-                        }
+                        <button onclick="openEditActivityView('${act.id}')" style="background:#1c2640; color:#3b82f6; border:1px solid var(--border-color); padding:4px 10px; font-size:11px; border-radius:6px;">Upravit / Plán</button>
+                        <button onclick="openChytréSmazaniView('${act.id}')" style="color:var(--danger-text); background:#1c2640; border:1px solid var(--border-color); padding:4px 10px; font-size:11px; border-radius:6px;">Odstranit</button>
                     </div>
                 `;
                 container.appendChild(item);
             });
-        }
 
-        window.restoreActivity = function(id) {
-            let act = activities.find(a => a.id === id);
-            if (act) {
-                act.end = "";
+            initDragAndDrop('modal-activity-list', activities, () => {
                 saveToCloud();
-                renderDashboard();
-                renderSettingsList();
-            }
-        }
-
-        window.moveActivity = function(index, direction) {
-            let newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= activities.length) return;
-            let temp = activities[index]; activities[index] = activities[newIndex]; activities[newIndex] = temp;
-            saveToCloud(); renderSettingsList(); renderTable();
+                renderTable();
+            });
         }
 
         window.openEditActivityView = function(id) {
@@ -1015,14 +1258,14 @@
             let act = activities.find(a => a.id === id);
             if(!act) return;
 
+            tempEditingIntervals = act.intervals ? JSON.parse(JSON.stringify(act.intervals)) : [];
+
             document.getElementById('settings-main-view').style.display = 'none';
             document.getElementById('settings-edit-view').style.display = 'block';
-            document.getElementById('settings-title').innerText = 'Úprava úkolu';
+            document.getElementById('settings-title').innerText = 'Úprava / Obnovení úkolu';
             document.getElementById('edit-act-original-name').innerText = act.name;
             document.getElementById('edit-act-name').value = act.name;
             document.getElementById('edit-act-type').value = act.type;
-            document.getElementById('edit-act-start-date').value = act.start || "";
-            document.getElementById('edit-act-end-date').value = act.end || "";
             
             if(act.type === 'number') {
                 document.getElementById('edit-limit-group').style.display = 'block';
@@ -1031,6 +1274,31 @@
             } else {
                 document.getElementById('edit-limit-group').style.display = 'none';
             }
+
+            renderTempIntervalsList();
+        }
+
+        function renderTempIntervalsList() {
+            const container = document.getElementById('edit-act-intervals-list');
+            if (tempEditingIntervals.length === 0) {
+                container.innerHTML = '<span style="color:var(--text-muted); font-size:11px;">Žádná omezení (aktivní trvale odevšad).</span>';
+                return;
+            }
+            let html = '';
+            tempEditingIntervals.forEach((inter, idx) => {
+                let startText = inter.start || 'Počátek';
+                let endText = inter.end || 'Nekonečno';
+                html += `<div class="interval-tag">
+                    <span>📅 ${startText} ➔ ${endText}</span>
+                    <button onclick="removeTempInterval(${idx})">✕</button>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        window.removeTempInterval = function(idx) {
+            tempEditingIntervals.splice(idx, 1);
+            renderTempIntervalsList();
         }
 
         window.openChytréSmazaniView = function(id) {
@@ -1041,6 +1309,7 @@
             document.getElementById('settings-delete-view').style.display = 'block';
             document.getElementById('settings-title').innerText = 'Odstranění úkolu';
             document.getElementById('delete-act-name').innerText = act.name;
+            document.getElementById('delete-act-date').value = today.toISOString().split('T')[0];
         }
 
         window.backToSettingsMain = function() {
@@ -1058,7 +1327,9 @@
             if (mode === 'all') {
                 activities.splice(idx, 1);
             } else if (mode === 'archive') {
-                activities[idx].end = today.toISOString().split('T')[0];
+                let archiveDate = document.getElementById('delete-act-date').value || today.toISOString().split('T')[0];
+                if (!activities[idx].intervals) activities[idx].intervals = [];
+                activities[idx].intervals.push({ start: "", end: archiveDate });
             }
             saveToCloud(); renderDashboard(); backToSettingsMain();
         }
@@ -1067,7 +1338,7 @@
             const container = document.getElementById('sports-management-list');
             let html = '';
             sportsList.forEach((sport, idx) => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:6px 10px; margin-bottom:4px; border-radius:6px; border:1px solid var(--border-color);">
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0b0f19; padding:8px 12px; margin-bottom:6px; border-radius:8px; border:1px solid var(--border-color);">
                     <span>${sport}</span>
                     <button onclick="deleteSportFromList(${idx})" style="background:none; border:none; color:var(--danger-text); font-weight:bold; cursor:pointer;">✕</button>
                 </div>`;
@@ -1113,13 +1384,29 @@
             document.getElementById('btn-clear-done-todo').onclick = () => { todoList = todoList.filter(t => !t.done); saveToCloud(); renderTodoList(); };
 
             document.getElementById('btn-open-goals').onclick = () => {
-                document.getElementById('goals-year-title').innerText = currentYear;
+                goalsSelectedYear = currentYear;
                 renderGoals(); document.getElementById('goals-modal').style.display = 'flex';
             };
             document.getElementById('btn-add-goal').onclick = () => {
-                if (!goals[currentYear]) goals[currentYear] = [];
-                goals[currentYear].push({ text: '', done: false });
+                if (!goals[goalsSelectedYear]) goals[goalsSelectedYear] = [];
+                goals[goalsSelectedYear].push({ text: '', done: false });
                 saveToCloud(); renderGoals();
+            };
+            
+            // Pěkné vestavěné pole pro přidání nového roku v Cílech (bez window.prompt)
+            document.getElementById('btn-toggle-add-year').onclick = () => {
+                const form = document.getElementById('add-year-form-container');
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                document.getElementById('new-goals-year-input').value = goalsSelectedYear + 1;
+            };
+            document.getElementById('btn-confirm-add-year').onclick = () => {
+                let inputYear = parseInt(document.getElementById('new-goals-year-input').value);
+                if (inputYear && !isNaN(inputYear)) {
+                    goalsSelectedYear = inputYear;
+                    if (!goals[goalsSelectedYear]) goals[goalsSelectedYear] = [];
+                    saveToCloud(); renderGoals();
+                    document.getElementById('add-year-form-container').style.display = 'none';
+                }
             };
 
             document.getElementById('btn-prev-week').onclick = () => {
@@ -1166,8 +1453,25 @@
                 let dText = document.getElementById('diary-text').value.trim();
                 if(!dDate || !dText) return;
                 diary[dDate] = dText; saveToCloud();
-                document.getElementById('diary-text').value = ''; renderDiaryLogs();
+                document.getElementById('diary-text').value = ''; 
+                document.getElementById('btn-delete-diary').style.display = 'none';
+                renderDiaryLogs();
             };
+
+            document.getElementById('btn-delete-diary').onclick = () => {
+                let dDate = document.getElementById('diary-input-date').value;
+                if (dDate && diary[dDate]) {
+                    if (confirm(`Opravdu chceš smazat zápis ze dne ${dDate}?`)) {
+                        delete diary[dDate];
+                        saveToCloud();
+                        document.getElementById('diary-text').value = '';
+                        document.getElementById('btn-delete-diary').style.display = 'none';
+                        renderDiaryLogs();
+                    }
+                }
+            };
+
+            document.getElementById('diary-search').oninput = () => renderDiaryLogs();
 
             document.getElementById('chart-period-w').onclick = (e) => { graphPeriod = 'week'; localStorage.setItem('tracker_graph_period', 'week'); selectSleepBtn(e.target); renderMainChart(); };
             document.getElementById('chart-period-m').onclick = (e) => { graphPeriod = 'month'; localStorage.setItem('tracker_graph_period', 'month'); selectSleepBtn(e.target); renderMainChart(); };
@@ -1179,6 +1483,16 @@
             document.getElementById('new-act-type').onchange = (e) => { document.getElementById('modal-limit-group').style.display = e.target.value === 'number' ? 'block' : 'none'; };
             document.getElementById('edit-act-type').onchange = (e) => { document.getElementById('edit-limit-group').style.display = e.target.value === 'number' ? 'block' : 'none'; };
 
+            document.getElementById('btn-add-interval-to-edit').onclick = () => {
+                let s = document.getElementById('edit-act-new-start').value;
+                let e = document.getElementById('edit-act-new-end').value;
+                if (!s && !e) return;
+                tempEditingIntervals.push({ start: s, end: e });
+                document.getElementById('edit-act-new-start').value = '';
+                document.getElementById('edit-act-new-end').value = '';
+                renderTempIntervalsList();
+            };
+
             document.getElementById('btn-confirm-edit-act').onclick = () => {
                 let act = activities.find(a => a.id === activeEditingId);
                 if (!act) return;
@@ -1189,8 +1503,7 @@
 
                 act.name = newName;
                 act.type = newType;
-                act.start = document.getElementById('edit-act-start-date').value;
-                act.end = document.getElementById('edit-act-end-date').value;
+                act.intervals = tempEditingIntervals;
 
                 if (newType === 'number') {
                     act.min = parseFloat(document.getElementById('edit-act-min').value) || 0;
@@ -1211,7 +1524,12 @@
                 if(!name) return;
                 const id = 'custom_' + Date.now();
 
-                let newAct = { id, name, type, start: startStr, end: endStr };
+                let intervalsArr = [];
+                if (startStr || endStr) {
+                    intervalsArr.push({ start: startStr, end: endStr });
+                }
+
+                let newAct = { id, name, type, intervals: intervalsArr };
                 if(type === 'number') {
                     newAct.min = parseFloat(document.getElementById('new-act-min').value) || 0;
                     newAct.max = parseFloat(document.getElementById('new-act-max').value) || 24;
@@ -1254,11 +1572,25 @@
                 if (date.includes(term) || text.toLowerCase().includes(term)) {
                     count++;
                     let fDate = new Date(date).toLocaleDateString('cs-CZ', {day:'numeric', month:'long', year:'numeric'});
-                    html += `<div class="diary-entry"><div class="diary-date">${fDate}</div><div style="white-space: pre-wrap; line-height:1.5;">${text}</div></div>`;
+                    html += `<div class="diary-entry" onclick="editDiaryEntry('${date}')">
+                        <div class="diary-date">
+                            <span>${fDate}</span>
+                            <span style="color:var(--primary); font-size:11px;">✏️ Upravit</span>
+                        </div>
+                        <div class="diary-content-text" style="white-space: pre-wrap; color:#e2e8f0;">${text}</div>
+                    </div>`;
                 }
             });
-            if(count === 0) html = '<p style="color:#64748b; text-align:center;">Žádné záznamy.</p>';
+            if(count === 0) html = '<p style="color:var(--text-muted); text-align:center;">Žádné záznamy.</p>';
             container.innerHTML = html;
+        }
+
+        window.editDiaryEntry = function(date) {
+            if (diary[date]) {
+                document.getElementById('diary-input-date').value = date;
+                document.getElementById('diary-text').value = diary[date];
+                document.getElementById('btn-delete-diary').style.display = 'inline-block';
+            }
         }
 
         function calculateBigStats() {
@@ -1397,7 +1729,7 @@
                     html += `<tr><td style="width:130px; text-align:left; padding-left:4px;">${act.name}</td>`;
                     for(let d=1; d<=days; d++) {
                         if (!isActivityVisibleOnDate(act, yearOverviewSelectedYear, m, d)) {
-                            html += `<td style="background-color:#0f172a; color:#475569;">-</td>`;
+                            html += `<td style="background-color:#0b0f19; color:#475569;">-</td>`;
                             continue;
                         }
                         let val = db[yearOverviewSelectedYear][m][act.id] ? db[yearOverviewSelectedYear][m][act.id][d] : false;
