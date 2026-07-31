@@ -176,7 +176,7 @@
             border-radius: 10px; 
             user-select: none;
             touch-action: none;
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background-color 0.2s ease;
         }
         .drag-handle { 
             cursor: grab; 
@@ -191,9 +191,25 @@
         .drag-handle:active { cursor: grabbing; background: var(--primary); color: white; }
         .dragging { opacity: 0.4; border: 2px dashed var(--primary); transform: scale(0.98); background: #1e293b; }
 
-        .goal-row.fancy-premium { border-left: 4px solid var(--primary); background: linear-gradient(145deg, #1c2640, #0b0f19); }
+        .goal-row.fancy-premium { border-left: 4px solid var(--primary); }
+        .goal-row.state-done { background: rgba(34, 197, 94, 0.18) !important; border-color: rgba(34, 197, 94, 0.4) !important; }
+        .goal-row.state-failed { background: rgba(239, 68, 68, 0.18) !important; border-color: rgba(239, 68, 68, 0.4) !important; }
+
+        .btn-status-toggle {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.15s ease;
+        }
+        .btn-status-toggle:hover { background: rgba(255, 255, 255, 0.15); }
+        .btn-status-toggle.active-success { background: var(--success-color); color: var(--success-text); border-color: var(--success-text); }
+        .btn-status-toggle.active-danger { background: var(--danger-color); color: var(--danger-text); border-color: var(--danger-text); }
+
         .goal-text { flex: 1; background: transparent; border: none; color: white; font-size: 13px; outline: none; font-family: inherit; }
-        .goal-done { text-decoration: line-through; color: var(--text-muted); }
 
         .year-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid var(--border-color); }
         .year-tab { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -776,7 +792,7 @@
                 endDay = Math.min(totalDays, startDay + 6);
             }
 
-            let headHTML = `<tr><th>Aktivita</th>`;
+            let headHTML = `<tr><th>Den</th>`;
             for (let d = startDay; d <= endDay; d++) {
                 let isSelected = (d === selectedDay) ? 'selected-day-header' : '';
                 let isToday = (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) ? 'today-header' : '';
@@ -1158,10 +1174,14 @@
             const container = document.getElementById('todo-list-container');
             let html = '';
             todoList.forEach((t, idx) => {
-                html += `<div class="goal-row" data-drag-index="${idx}">
+                let statusClass = t.status === 'done' ? 'state-done' : (t.status === 'failed' ? 'state-failed' : '');
+                html += `<div class="goal-row ${statusClass}" data-drag-index="${idx}">
                     <span class="drag-handle">☰</span>
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${idx})" style="margin-left: 2px;">
-                    <input type="text" class="goal-text ${t.done ? 'goal-done' : ''}" value="${t.text}" onchange="updateTodoText(${idx}, this.value)" placeholder="Zadej rychlý úkol...">
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-status-toggle ${t.status === 'done' ? 'active-success' : ''}" onclick="setTodoStatus(${idx}, 'done')" title="Splněno">✓</button>
+                        <button class="btn-status-toggle ${t.status === 'failed' ? 'active-danger' : ''}" onclick="setTodoStatus(${idx}, 'failed')" title="Nesplněno">✕</button>
+                    </div>
+                    <input type="text" class="goal-text" value="${t.text}" onchange="updateTodoText(${idx}, this.value)" placeholder="Zadej rychlý úkol...">
                     <button onclick="deleteTodo(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
                 </div>`;
             });
@@ -1174,7 +1194,18 @@
             });
         }
 
-        window.toggleTodo = function(idx) { todoList[idx].done = !todoList[idx].done; saveToCloud(); renderTodoList(); }
+        window.setTodoStatus = function(idx, newStatus) {
+            if (todoList[idx].status === newStatus) {
+                todoList[idx].status = 'none';
+                todoList[idx].done = false;
+            } else {
+                todoList[idx].status = newStatus;
+                todoList[idx].done = (newStatus === 'done');
+            }
+            saveToCloud();
+            renderTodoList();
+        }
+
         window.updateTodoText = function(idx, val) { todoList[idx].text = val; saveToCloud(); }
         window.deleteTodo = function(idx) { todoList.splice(idx, 1); saveToCloud(); renderTodoList(); }
 
@@ -1198,10 +1229,14 @@
             if (!goals[goalsSelectedYear]) goals[goalsSelectedYear] = [];
             let html = '';
             goals[goalsSelectedYear].forEach((g, idx) => {
-                html += `<div class="goal-row fancy-premium" data-drag-index="${idx}">
+                let statusClass = g.status === 'done' ? 'state-done' : (g.status === 'failed' ? 'state-failed' : '');
+                html += `<div class="goal-row fancy-premium ${statusClass}" data-drag-index="${idx}">
                     <span class="drag-handle">☰</span>
-                    <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${idx})" style="margin-left: 2px;">
-                    <input type="text" class="goal-text ${g.done ? 'goal-done' : ''}" value="${g.text}" onchange="updateGoalText(${idx}, this.value)" placeholder="Zadej velký roční cíl...">
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-status-toggle ${g.status === 'done' ? 'active-success' : ''}" onclick="setGoalStatus(${idx}, 'done')" title="Splněno">✓</button>
+                        <button class="btn-status-toggle ${g.status === 'failed' ? 'active-danger' : ''}" onclick="setGoalStatus(${idx}, 'failed')" title="Nesplněno">✕</button>
+                    </div>
+                    <input type="text" class="goal-text" value="${g.text}" onchange="updateGoalText(${idx}, this.value)" placeholder="Zadej velký roční cíl...">
                     <button onclick="deleteGoal(${idx})" style="border:none; background:none; color:var(--danger-text); cursor:pointer; font-weight:bold;">✕</button>
                 </div>`;
             });
@@ -1212,6 +1247,18 @@
                 saveToCloud();
                 renderGoals();
             });
+        }
+
+        window.setGoalStatus = function(idx, newStatus) {
+            if (goals[goalsSelectedYear][idx].status === newStatus) {
+                goals[goalsSelectedYear][idx].status = 'none';
+                goals[goalsSelectedYear][idx].done = false;
+            } else {
+                goals[goalsSelectedYear][idx].status = newStatus;
+                goals[goalsSelectedYear][idx].done = (newStatus === 'done');
+            }
+            saveToCloud();
+            renderGoals();
         }
 
         window.switchGoalsYear = function(y) {
@@ -1230,7 +1277,6 @@
             }
         }
 
-        window.toggleGoal = function(idx) { goals[goalsSelectedYear][idx].done = !goals[goalsSelectedYear][idx].done; saveToCloud(); renderGoals(); }
         window.updateGoalText = function(idx, val) { goals[goalsSelectedYear][idx].text = val; saveToCloud(); }
         window.deleteGoal = function(idx) { goals[goalsSelectedYear].splice(idx, 1); saveToCloud(); renderGoals(); }
 
@@ -1398,8 +1444,8 @@
             document.getElementById('btn-open-big-stats').onclick = () => { document.getElementById('big-stats-modal').style.display = 'flex'; calculateBigStats(); };
             
             document.getElementById('btn-open-todo').onclick = () => { renderTodoList(); document.getElementById('todo-modal').style.display = 'flex'; };
-            document.getElementById('btn-add-todo').onclick = () => { todoList.push({ text: '', done: false }); saveToCloud(); renderTodoList(); };
-            document.getElementById('btn-clear-done-todo').onclick = () => { todoList = todoList.filter(t => !t.done); saveToCloud(); renderTodoList(); };
+            document.getElementById('btn-add-todo').onclick = () => { todoList.unshift({ text: '', done: false, status: 'none' }); saveToCloud(); renderTodoList(); };
+            document.getElementById('btn-clear-done-todo').onclick = () => { todoList = todoList.filter(t => t.status !== 'done' && !t.done); saveToCloud(); renderTodoList(); };
 
             document.getElementById('btn-open-goals').onclick = () => {
                 goalsSelectedYear = currentYear;
@@ -1407,7 +1453,7 @@
             };
             document.getElementById('btn-add-goal').onclick = () => {
                 if (!goals[goalsSelectedYear]) goals[goalsSelectedYear] = [];
-                goals[goalsSelectedYear].push({ text: '', done: false });
+                goals[goalsSelectedYear].unshift({ text: '', done: false, status: 'none' });
                 saveToCloud(); renderGoals();
             };
             
@@ -1738,7 +1784,7 @@
 
                 if (monthActs.length === 0) continue;
 
-                html += `<div class="panel" style="width:100%; box-sizing:border-box;"><h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4><div style="width:100%; overflow-x:auto;"><table style="font-size:9px; table-layout:auto; width:100%;"><tr><th>Aktivita</th>`;
+                html += `<div class="panel" style="width:100%; box-sizing:border-box;"><h4 style="margin:0 0 8px 0; color:var(--primary);">${monthNames[m]}</h4><div style="width:100%; overflow-x:auto;"><table style="font-size:9px; table-layout:auto; width:100%;"><tr><th>Den</th>`;
                 for(let d=1; d<=days; d++) html += `<th>${d}</th>`;
                 html += `</tr>`;
                 
